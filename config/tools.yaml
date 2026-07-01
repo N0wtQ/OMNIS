@@ -1,0 +1,145 @@
+disciplines:
+  osint:
+    name: "OSINT (Open-Source Intelligence)"
+    emoji: "🌐"
+    tools:
+      - name: theHarvester
+        repo: "https://github.com/laramies/theHarvester"
+        description: "Recolecta emails, dominios y subdominios de fuentes públicas"
+        capabilities: [emails, domains, subdomains, hosts, ips]
+      - name: SpiderFoot
+        repo: "https://github.com/smicallef/spiderfoot"
+        description: "Automatiza la recopilación de OSINT para amenazas y mapeo"
+        capabilities: [domains, ips, emails, usernames, threat_intel]
+      - name: sn0int
+        repo: "https://github.com/kpcyrd/sn0int"
+        description: "Framework OSINT semi-automático y gestor de paquetes"
+        capabilities: [domains, ips, emails, accounts]
+      - name: osint-mcp-server
+        repo: "https://github.com/badchars/osint-mcp-server"
+        description: "37 herramientas de 12 fuentes (DNS, WHOIS, Certificate Transparency)"
+        capabilities: [dns, whois, certificates, passive_recon]
+      - name: shohei
+        repo: "https://github.com/kent-tokyo/shohei"
+        description: "168 herramientas de seguridad y OSINT, sin API keys"
+        capabilities: [dns, tls, email, network, recon]
+
+  socmint:
+    name: "SOCMINT (Social Media Intelligence)"
+    emoji: "📱"
+    tools:
+      - name: Sherlock
+        repo: "https://github.com/sherlock-project/sherlock"
+        description: "Encuentra nombres de usuario en más de 400 plataformas"
+        capabilities: [usernames, social_profiles]
+      - name: Maigret
+        repo: "https://github.com/soxoj/maigret"
+        description: "Base de datos de más de 2000 sitios para username enumeration"
+        capabilities: [usernames, social_profiles, pii]
+      - name: Onlinecybertools MCP
+        description: "280+ herramientas OSINT incluyendo redes sociales"
+        capabilities: [social_media, usernames, profiles]
+
+  geoint:
+    name: "GEOINT / IMINT / ORBINT"
+    emoji: "🛰️"
+    tools:
+      - name: Leafmap
+        repo: "https://github.com/opengeos/leafmap"
+        description: "Paquete Python para analizar y visualizar datos geoespaciales"
+        capabilities: [geospatial, maps, imagery]
+      - name: World Monitor
+        description: "Dashboard de inteligencia global con vuelos, CCTV, terremotos"
+        capabilities: [flights, cctv, earthquakes, maritime]
+      - name: IRONSIGHT
+        description: "Agrega inteligencia de 50+ fuentes (noticias, Telegram, seguimiento militar)"
+        capabilities: [news, telegram, military_tracking, conflict_zones]
+
+  darkint:
+    name: "DARKINT / DARKWEBINT"
+    emoji: "🌑"
+    tools:
+      - name: Robin
+        description: "Herramienta OSINT impulsada por IA para investigaciones en dark web"
+        capabilities: [dark_web, forums, marketplaces]
+      - name: Deep Web Scraper
+        description: "Aplicación local para scrapear y analizar datos de la dark web"
+        capabilities: [dark_web, scraping, data_extraction]
+      - name: Dehashed
+        url: "https://dehashed.com"
+        description: "Archivo masivo de la web profunda y oscura (versión gratuita)"
+        capabilities: [credentials, breaches, leaked_data]
+
+  finint:
+    name: "FININT / BLOCKINT"
+    emoji: "💰"
+    tools:
+      - name: theHarvester
+        description: "Búsqueda de información financiera pública"
+        capabilities: [corporate, financial_public]
+      - name: Blockchain Explorers
+        description: "Rastreo de transacciones en blockchain (Etherscan, BTC Explorer)"
+        capabilities: [crypto_wallets, transactions, blockchain]
+      - name: satellite-mcp
+        description: "Verificación de sanciones OFAC SDN vía OSINT"
+        capabilities: [sanctions, ofac, sdn]
+
+  cybint:
+    name: "CTI / CYBINT"
+    emoji: "⚔️"
+    tools:
+      - name: MISP
+        repo: "https://github.com/MISP/MISP"
+        description: "Plataforma de intercambio de inteligencia sobre malware"
+        capabilities: [malware, ioc, threat_intel, sharing]
+      - name: OpenPhish
+        url: "https://openphish.com"
+        description: "Fuente gratuita de feeds de phishing"
+        capabilities: [phishing, urls, threat_intel]
+      - name: ThreatBook CTI
+        description: "Plataforma gratuita de detección de amenazas"
+        capabilities: [threat_intel, ioc, reputation]
+      - name: ANY.RUN
+        url: "https://any.run"
+        description: "Acceso gratuito a Threat Intelligence Lookup"
+        capabilities: [malware_analysis, sandbox, ioc]
+
+  sigint:
+    name: "SIGINT / ELINT / COMINT"
+    emoji: "📡"
+    tools:
+      - name: shohei
+        description: "Herramientas para diagnóstico de infraestructura, DNS, TLS y email"
+        capabilities: [dns, tls, email_headers, network_analysis]
+      - name: Onlinecybertools MCP
+        description: "Herramientas de red y diagnóstico"
+        capabilities: [network, port_scan, traceroute]
+
+  techint:
+    name: "TECHINT / CRIMINT / VEHINT / HUMINT / MASINT / FISINT"
+    emoji: "🔧"
+    tools:
+      - name: awesome-osint-arsenal
+        repo: "https://github.com/cipher387/awesome-osint-arsenal"
+        description: "100+ herramientas OSINT para Kali Linux"
+        capabilities: [general_osint, vehicles, persons, companies]
+      - name: Third Eye
+        description: "Plataforma OSINT con seguimiento de vuelos, CCTV, terremotos y zonas de conflicto"
+        capabilities: [flights, cctv, conflict_zones, crisis_monitoring]
+      - name: osint-methodology
+        description: "Estructura y ética para manejo de información sensible"
+        capabilities: [methodology, ethics, opsec]
+
+confidence_levels:
+  HIGH:
+    label: "Alto"
+    description: "Múltiples fuentes independientes corroboran el hallazgo"
+    min_sources: 3
+  MEDIUM:
+    label: "Medio"
+    description: "Una o dos fuentes corroboran el hallazgo, con consistencia parcial"
+    min_sources: 2
+  LOW:
+    label: "Bajo"
+    description: "Hallazgo de fuente única o no corroborado"
+    min_sources: 1
