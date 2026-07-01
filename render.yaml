@@ -1,0 +1,16 @@
+# Despliegue gratuito en Render.com
+# Documentación: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: omnis-intelligence
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --chdir web app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    plan: free
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false          # Introduce el valor manualmente en el dashboard de Render
+      - key: SECRET_KEY
+        generateValue: true  # Render genera una clave aleatoria automáticamente
+      - key: FLASK_ENV
+        value: production

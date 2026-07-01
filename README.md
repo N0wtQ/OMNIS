@@ -16,11 +16,16 @@
 
 ## ¿Qué es O.M.N.I.S?
 
-O.M.N.I.S es un framework de fusión de inteligencia multidisciplinar de código abierto. Orquesta herramientas OSINT gratuitas y APIs públicas bajo un único flujo de trabajo AEAD:
+O.M.N.I.S es un framework de fusión de inteligencia multidisciplinar de código abierto. Orquesta herramientas OSINT gratuitas, APIs públicas y un motor multi-agente con LLM bajo un único flujo de trabajo AEAD:
 
 **Adquirir → Enriquecer → Evaluar → Entregar**
 
-Cada hallazgo es fuenteado, marcado con timestamp y puntuado con un nivel de confianza (Alto / Medio / Bajo). El resultado es un informe de inteligencia estructurado con correlación cruzada entre disciplinas y extracción automática de IOC.
+Dispone de **dos modos de operación**:
+
+| Modo | Descripción | Requiere |
+|------|-------------|----------|
+| ⚙️ **Clásico** | APIs públicas gratuitas (DNS, WHOIS, Blockchain, etc.) | Solo Python |
+| 🤖 **Multi-Agente** | Cada disciplina actúa como agente autónomo con LLM | API key de Groq (gratis) |
 
 ---
 
@@ -36,8 +41,6 @@ Cada hallazgo es fuenteado, marcado con timestamp y puntuado con un nivel de con
 | ⚔️ CTI / CYBINT | URLhaus, MalwareBazaar, AbuseIPDB |
 | 📡 SIGINT / ELINT / COMINT | TLS fingerprinting, BGPView, RDAP |
 | 🔧 TECHINT / CRIMINT | Wayback Machine, crt.sh, HTTP fingerprinting |
-
-Todas las herramientas y APIs utilizadas son **gratuitas y de código abierto**.
 
 ---
 
@@ -64,34 +67,67 @@ source .venv/bin/activate        # Linux / macOS
 .venv\Scripts\activate           # Windows
 ```
 
-### 3. Instalar dependencias Python
+### 3. Instalar dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Instalar herramientas externas (opcional pero recomendado)
-
-El script `setup.sh` clona e instala automáticamente theHarvester, SpiderFoot, Sherlock, Maigret y otros repositorios en la carpeta `tools/`.
+### 4. Configurar variables de entorno
 
 ```bash
-chmod +x setup.sh
-./setup.sh
+cp .env.example .env
+# Edita .env y añade tu GROQ_API_KEY si quieres el modo multi-agente
 ```
 
-> En Windows usa Git Bash o WSL para ejecutar el script.
+### 5. (Opcional) Instalar herramientas externas OSINT
 
-### 5. Verificar la instalación
+```bash
+chmod +x setup.sh && ./setup.sh
+```
+
+### 6. Verificar la instalación
 
 ```bash
 python omnis.py --list-disciplines
 ```
 
-Si ves las 8 disciplinas listadas, la instalación es correcta.
+---
+
+## Modo de uso — Interfaz Web 🌐
+
+La interfaz web permite lanzar investigaciones desde el navegador con visualización en tiempo real.
+
+### Arrancar el servidor
+
+```bash
+python web/app.py
+# Abre http://localhost:5001 en tu navegador
+```
+
+O con gunicorn (producción):
+
+```bash
+gunicorn --chdir web app:app --bind 0.0.0.0:5001 --workers 2
+```
+
+### Motor Multi-Agente (MiroFish-style)
+
+Activa el toggle **"Motor Multi-Agente"** en la interfaz web. Cada disciplina se convierte en un agente autónomo que:
+
+1. Recibe el objetivo y el contexto de agentes anteriores
+2. Razona con **Llama 3.3 70B** vía [Groq](https://console.groq.com) (tier gratuito)
+3. Extrae hallazgos e IOC estructurados en JSON
+4. Pasa el contexto enriquecido al siguiente agente
+
+Al final, el **Agente Síntesis** fusiona todos los hallazgos y genera el informe AEAD.
+
+> **¿Es gratis?** Sí. Groq ofrece 14.400 tokens/minuto sin coste con Llama 3.3 70B.
+> Regístrate en https://console.groq.com → API Keys → copia tu clave en `.env`.
 
 ---
 
-## Modo de uso
+## Modo de uso — CLI
 
 ### Sintaxis general
 
@@ -101,76 +137,50 @@ python omnis.py <objetivo> [opciones]
 
 | Parámetro | Descripción |
 |-----------|-------------|
-| `<objetivo>` | Dominio, dirección IP, nombre de usuario o empresa a investigar |
-| `--query`, `-q` | Contexto adicional en lenguaje natural para orientar la investigación |
-| `--disciplines`, `-d` | Lista de disciplinas a activar (por defecto: todas) |
-| `--output`, `-o` | Ruta de fichero donde guardar el informe generado |
-| `--verbose`, `-v` | Muestra errores y advertencias de cada módulo durante la ejecución |
-| `--list-disciplines` | Lista las disciplinas disponibles y termina |
+| `<objetivo>` | Dominio, IP, nombre de usuario o empresa |
+| `--query`, `-q` | Contexto adicional en lenguaje natural |
+| `--disciplines`, `-d` | Disciplinas a activar (por defecto: todas) |
+| `--output`, `-o` | Fichero donde guardar el informe |
+| `--verbose`, `-v` | Muestra advertencias de cada módulo |
+| `--list-disciplines` | Lista disciplinas disponibles y termina |
 
-### Disciplinas disponibles
+### Ejemplos
 
-```
-osint · socmint · geoint · darkint · finint · cybint · sigint · techint
-```
-
----
-
-### Ejemplos de uso
-
-**Investigación completa de un dominio** (todas las disciplinas):
 ```bash
+# Investigación completa
 python omnis.py ejemplo.com
-```
 
-**Perfil de amenaza — dominio con foco en ciberinteligencia:**
-```bash
+# Perfil de amenaza CTI
 python omnis.py malicious-domain.io --disciplines osint cybint sigint darkint
-```
 
-**Perfil corporativo — empresa con análisis financiero y redes sociales:**
-```bash
+# Perfil corporativo
 python omnis.py "Nombre de Empresa S.L." --disciplines osint socmint finint
-```
 
-**Investigación de una dirección IP:**
-```bash
-python omnis.py 198.51.100.42 --disciplines osint cybint sigint darkint
-```
+# IP con guardado de informe
+python omnis.py 198.51.100.42 --output reports/resultado.txt
 
-**Búsqueda de usuario en redes sociales:**
-```bash
+# Usuario en redes sociales
 python omnis.py johndoe --disciplines socmint osint
 ```
 
-**Investigación con contexto adicional y guardado de informe:**
-```bash
-python omnis.py ejemplo.com \
-  --query "Verificar posibles sanciones OFAC y presencia en dark web" \
-  --disciplines osint finint darkint cybint \
-  --output reports/ejemplo_com.txt
-```
-
-**Modo detallado para depuración:**
-```bash
-python omnis.py ejemplo.com --verbose
-```
-
 ---
 
-### Formato del informe generado
+## Despliegue gratuito en la web (Render.com)
 
-Cada investigación produce un informe estructurado con las siguientes secciones:
+O.M.N.I.S incluye `render.yaml` y `Procfile` listos para desplegar en [Render.com](https://render.com) sin coste.
 
-```
-📄 INFORME DE INTELIGENCIA — O.M.N.I.S
-├── Resumen ejecutivo          ← hallazgos clave, disciplinas y herramientas usadas
-├── Análisis por disciplina    ← resultados desglosados por OSINT, SOCMINT, GEOINT…
-├── Correlación cruzada        ← patrones, contradicciones e hipótesis entre disciplinas
-├── Extracción de IOC          ← IPs, dominios, hashes, emails, wallets, usuarios
-├── Recomendaciones            ← próximos pasos para el analista
-└── Fuentes                    ← cada hallazgo con fuente y timestamp
-```
+### Pasos
+
+1. Haz un fork del repositorio en GitHub
+2. Ve a [render.com](https://render.com) → **New Web Service** → conecta tu repo
+3. Render detecta automáticamente la configuración del `render.yaml`
+4. En **Environment Variables**, añade:
+   - `GROQ_API_KEY` → tu clave de Groq (tier gratuito)
+   - `SECRET_KEY` → Render la genera automáticamente
+5. Haz clic en **Deploy** → en ~2 minutos tendrás la URL pública
+
+> El plan gratuito de Render entra en modo suspensión tras 15 min de inactividad.
+> Para uso continuo, usa el plan Starter ($7/mes) o mantén el servicio activo con un ping periódico.
 
 ---
 
@@ -178,14 +188,22 @@ Cada investigación produce un informe estructurado con las siguientes secciones
 
 ```
 OMNIS/
-├── OMNIS.md             # Identidad del sistema y metodología
-├── README.md            # Este archivo
-├── omnis.py             # Punto de entrada CLI
-├── requirements.txt     # Dependencias Python
-├── setup.sh             # Instalador de herramientas externas
+├── OMNIS.md                 # Identidad del sistema y metodología
+├── README.md                # Este archivo
+├── omnis.py                 # CLI entrada
+├── requirements.txt         # Dependencias Python
+├── setup.sh                 # Instalador de herramientas externas
+├── Procfile                 # Para Render/Heroku
+├── render.yaml              # Blueprint de despliegue gratuito
+├── .env.example             # Plantilla de variables de entorno
 ├── config/
-│   └── tools.yaml       # Catálogo de herramientas
-├── modules/             # Módulos por disciplina ALLINT
+│   └── tools.yaml           # Catálogo de herramientas
+├── web/
+│   ├── app.py               # Servidor Flask + SSE (Server-Sent Events)
+│   └── templates/
+│       └── index.html       # Interfaz web (Tailwind CSS, vanilla JS)
+├── modules/
+│   ├── multiagent.py        # Motor multi-agente (MiroFish-style + Groq)
 │   ├── osint.py
 │   ├── socmint.py
 │   ├── geoint.py
@@ -195,11 +213,11 @@ OMNIS/
 │   ├── sigint.py
 │   └── techint.py
 ├── core/
-│   ├── orchestrator.py  # Motor de orquestación AEAD
-│   ├── report.py        # Generador de informes
-│   ├── ioc_extractor.py # Extractor de IOC por expresiones regulares
-│   └── confidence.py    # Motor de puntuación de confianza
-└── reports/             # Directorio de salida de informes
+│   ├── orchestrator.py      # Motor AEAD clásico
+│   ├── report.py            # Generador de informes
+│   ├── ioc_extractor.py     # Extractor de IOC
+│   └── confidence.py        # Puntuación de confianza
+└── reports/                 # Directorio de salida
 ```
 
 ---

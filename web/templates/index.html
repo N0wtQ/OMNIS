@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>O.M.N.I.S — Operational Multi-Node Intelligence System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            omnis: { 900: '#0a0f1e', 800: '#0d1529', 700: '#111d3a', accent: '#00d4ff', gold: '#ffd700' }
+          },
+          fontFamily: { mono: ['JetBrains Mono', 'Fira Code', 'monospace'] }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { background: #0a0f1e; font-family: 'JetBrains Mono', monospace; }
+    .glow { text-shadow: 0 0 20px #00d4ff, 0 0 40px #00d4ff44; }
+    .glow-gold { text-shadow: 0 0 15px #ffd700, 0 0 30px #ffd70044; }
+    .card { background: #0d1529; border: 1px solid #1a2a4a; }
+    .card-accent { border-color: #00d4ff33; }
+    .btn-primary { background: linear-gradient(135deg, #00d4ff22, #00d4ff11); border: 1px solid #00d4ff; color: #00d4ff; }
+    .btn-primary:hover { background: linear-gradient(135deg, #00d4ff33, #00d4ff22); }
+    .btn-gold { background: linear-gradient(135deg, #ffd70022, #ffd70011); border: 1px solid #ffd700; color: #ffd700; }
+    .btn-gold:hover { background: linear-gradient(135deg, #ffd70033, #ffd70022); }
+    .discipline-chip { background: #111d3a; border: 1px solid #1a2a4a; cursor: pointer; transition: all .2s; }
+    .discipline-chip.active { border-color: #00d4ff; color: #00d4ff; background: #00d4ff11; }
+    .agent-log { max-height: 220px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #00d4ff22 transparent; }
+    .spinner { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .fade-in { animation: fadeIn .4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    pre { white-space: pre-wrap; word-break: break-word; }
+    .tab.active { border-bottom: 2px solid #00d4ff; color: #00d4ff; }
+    ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #00d4ff33; border-radius: 4px; }
+  </style>
+</head>
+<body class="text-gray-300 min-h-screen">
+
+  <!-- HEADER -->
+  <header class="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-white glow tracking-widest">O.M.N.I.S</h1>
+      <p class="text-xs text-gray-500 tracking-wider">Operational Multi-Node Intelligence System</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="modo-badge" class="text-xs px-2 py-1 rounded border border-gray-700 text-gray-500">Modo: Clásico</span>
+      <span class="text-xs text-gray-600">v2.0 · Motor Multi-Agente</span>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8 space-y-6">
+
+    <!-- FORMULARIO -->
+    <section class="card card-accent rounded-xl p-6 fade-in">
+      <h2 class="text-sm font-semibold text-gray-400 mb-4 tracking-widest uppercase">Nueva investigación</h2>
+
+      <div class="space-y-4">
+        <div>
+          <label class="text-xs text-gray-500 block mb-1">Objetivo <span class="text-red-400">*</span></label>
+          <input id="objetivo" type="text" placeholder="dominio.com · 1.2.3.4 · @usuario · Empresa S.L."
+            class="w-full bg-omnis-900 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-omnis-accent transition" />
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-500 block mb-1">Consulta / contexto <span class="text-gray-600">(opcional)</span></label>
+          <textarea id="consulta" rows="2" placeholder="Ej: Verificar sanciones OFAC y presencia en dark web..."
+            class="w-full bg-omnis-900 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-omnis-accent transition resize-none"></textarea>
+        </div>
+
+        <!-- DISCIPLINAS -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs text-gray-500">Disciplinas</label>
+            <div class="flex gap-2">
+              <button onclick="toggleTodas(true)" class="text-xs text-gray-500 hover:text-omnis-accent transition">Todas</button>
+              <span class="text-gray-700">·</span>
+              <button onclick="toggleTodas(false)" class="text-xs text-gray-500 hover:text-omnis-accent transition">Ninguna</button>
+            </div>
+          </div>
+          <div id="disciplinas-container" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- MODO AGENTE -->
+        <div class="flex items-center justify-between p-3 rounded-lg bg-omnis-900 border border-gray-700">
+          <div>
+            <p class="text-sm text-white">Motor Multi-Agente <span class="text-xs text-yellow-500 ml-1">(requiere GROQ_API_KEY)</span></p>
+            <p class="text-xs text-gray-500 mt-0.5">Cada disciplina actúa como agente autónomo con LLM (Groq · gratis)</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="modo-agente" class="sr-only peer" />
+            <div class="w-10 h-5 bg-gray-700 rounded-full peer peer-checked:bg-omnis-accent transition-all"></div>
+            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-5"></div>
+          </label>
+        </div>
+
+        <button id="btn-investigar" onclick="iniciarInvestigacion()"
+          class="btn-primary w-full py-2.5 rounded-lg text-sm font-semibold tracking-widest uppercase transition cursor-pointer">
+          ▶ Iniciar investigación
+        </button>
+      </div>
+    </section>
+
+    <!-- PANEL DE RESULTADOS -->
+    <section id="panel-resultados" class="hidden fade-in">
+
+      <!-- Estado / log de agentes -->
+      <div id="panel-progreso" class="card rounded-xl p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <svg id="spinner" class="spinner w-4 h-4 text-omnis-accent" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          <span id="estado-texto" class="text-sm text-omnis-accent font-semibold">Iniciando investigación...</span>
+        </div>
+        <div id="agent-log" class="agent-log space-y-1 text-xs text-gray-400 font-mono"></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="card rounded-xl overflow-hidden">
+        <div class="flex border-b border-gray-800">
+          <button class="tab active px-5 py-3 text-xs tracking-widest uppercase" onclick="mostrarTab('informe', this)">Informe</button>
+          <button class="tab px-5 py-3 text-xs text-gray-500 tracking-widest uppercase" onclick="mostrarTab('historial', this)">Historial</button>
+        </div>
+
+        <div id="tab-informe" class="p-5">
+          <div id="informe-placeholder" class="text-center py-12 text-gray-600 text-sm">
+            El informe aparecerá aquí al completar la investigación.
+          </div>
+          <pre id="informe-contenido" class="hidden text-xs text-gray-300 leading-relaxed font-mono"></pre>
+          <div id="btn-descargar-wrapper" class="hidden mt-4">
+            <button onclick="descargarInforme()" class="btn-gold px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase transition">
+              ↓ Descargar informe .txt
+            </button>
+          </div>
+        </div>
+
+        <div id="tab-historial" class="hidden p-5">
+          <div id="historial-contenido" class="space-y-2 text-xs"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="text-center py-6 text-xs text-gray-700 border-t border-gray-900">
+    O.M.N.I.S · Operational Multi-Node Intelligence System · "See all. Connect all. Understand all."
+  </footer>
+
+<script>
+  const DISCIPLINAS_EMOJIS = {
+    osint: '🌐', socmint: '📱', geoint: '🛰️', darkint: '🌑',
+    finint: '💰', cybint: '⚔️', sigint: '📡', techint: '🔧'
+  };
+  let disciplinasActivas = new Set();
+  let informeActual = '';
+  let evtSource = null;
+
+  async function cargarDisciplinas() {
+    const resp = await fetch('/api/disciplinas');
+    const lista = await resp.json();
+    const cont = document.getElementById('disciplinas-container');
+    lista.forEach(d => {
+      disciplinasActivas.add(d);
+      const chip = document.createElement('button');
+      chip.id = `chip-${d}`;
+      chip.className = 'discipline-chip active text-xs px-3 py-1 rounded-full font-mono';
+      chip.textContent = `${DISCIPLINAS_EMOJIS[d] || ''} ${d.toUpperCase()}`;
+      chip.onclick = () => toggleDisciplina(d, chip);
+      cont.appendChild(chip);
+    });
+  }
+
+  function toggleDisciplina(d, chip) {
+    if (disciplinasActivas.has(d)) { disciplinasActivas.delete(d); chip.classList.remove('active'); }
+    else { disciplinasActivas.add(d); chip.classList.add('active'); }
+  }
+
+  function toggleTodas(activar) {
+    document.querySelectorAll('.discipline-chip').forEach(chip => {
+      const d = chip.id.replace('chip-', '');
+      if (activar) { disciplinasActivas.add(d); chip.classList.add('active'); }
+      else { disciplinasActivas.delete(d); chip.classList.remove('active'); }
+    });
+  }
+
+  document.getElementById('modo-agente').addEventListener('change', function() {
+    const badge = document.getElementById('modo-badge');
+    badge.textContent = this.checked ? 'Modo: Multi-Agente 🤖' : 'Modo: Clásico';
+    badge.className = this.checked
+      ? 'text-xs px-2 py-1 rounded border border-yellow-600 text-yellow-500'
+      : 'text-xs px-2 py-1 rounded border border-gray-700 text-gray-500';
+  });
+
+  async function iniciarInvestigacion() {
+    const objetivo = document.getElementById('objetivo').value.trim();
+    if (!objetivo) { alert('Introduce un objetivo para la investigación.'); return; }
+
+    const btn = document.getElementById('btn-investigar');
+    btn.disabled = true;
+    btn.textContent = '⏳ Iniciando...';
+
+    limpiarPanel();
+    document.getElementById('panel-resultados').classList.remove('hidden');
+    document.getElementById('panel-progreso').classList.remove('hidden');
+
+    const payload = {
+      objetivo,
+      consulta: document.getElementById('consulta').value.trim(),
+      disciplinas: [...disciplinasActivas],
+      modo_agente: document.getElementById('modo-agente').checked,
+    };
+
+    const resp = await fetch('/api/investigar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const { id, error } = await resp.json();
+    if (error) { mostrarError(error); btn.disabled = false; btn.textContent = '▶ Iniciar investigación'; return; }
+
+    escucharStream(id);
+
+    btn.disabled = false;
+    btn.textContent = '▶ Iniciar investigación';
+  }
+
+  function escucharStream(id) {
+    if (evtSource) evtSource.close();
+    evtSource = new EventSource(`/api/stream/${id}`);
+    evtSource.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      if (data.tipo === 'agente') {
+        appendLog(data.msg);
+      } else if (data.tipo === 'completado') {
+        evtSource.close();
+        mostrarInforme(data.informe);
+        setEstado('✅ Investigación completada', false);
+        cargarHistorial();
+      } else if (data.tipo === 'error') {
+        evtSource.close();
+        mostrarError(data.msg);
+        setEstado('❌ Error en la investigación', false);
+      } else if (data.error) {
+        evtSource.close();
+        mostrarError(data.error);
+      }
+    };
+    evtSource.onerror = () => {
+      evtSource.close();
+      setEstado('❌ Error de conexión con el servidor', false);
+    };
+  }
+
+  function appendLog(msg) {
+    const log = document.getElementById('agent-log');
+    const line = document.createElement('div');
+    line.className = 'fade-in';
+    line.textContent = `${new Date().toLocaleTimeString('es-ES')} · ${msg}`;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function setEstado(texto, cargando) {
+    document.getElementById('estado-texto').textContent = texto;
+    document.getElementById('spinner').style.display = cargando ? 'block' : 'none';
+  }
+
+  function mostrarInforme(texto) {
+    informeActual = texto;
+    document.getElementById('informe-placeholder').classList.add('hidden');
+    const pre = document.getElementById('informe-contenido');
+    pre.textContent = texto;
+    pre.classList.remove('hidden');
+    document.getElementById('btn-descargar-wrapper').classList.remove('hidden');
+  }
+
+  function mostrarError(msg) {
+    document.getElementById('informe-placeholder').textContent = `Error: ${msg}`;
+    document.getElementById('informe-placeholder').classList.remove('hidden');
+    document.getElementById('informe-placeholder').classList.add('text-red-400');
+  }
+
+  function limpiarPanel() {
+    document.getElementById('agent-log').innerHTML = '';
+    document.getElementById('informe-contenido').classList.add('hidden');
+    document.getElementById('informe-contenido').textContent = '';
+    document.getElementById('informe-placeholder').classList.remove('hidden', 'text-red-400');
+    document.getElementById('informe-placeholder').textContent = 'El informe aparecerá aquí al completar la investigación.';
+    document.getElementById('btn-descargar-wrapper').classList.add('hidden');
+    setEstado('Iniciando investigación...', true);
+  }
+
+  function mostrarTab(tab, btn) {
+    ['informe', 'historial'].forEach(t => {
+      document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab);
+    });
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (tab === 'historial') cargarHistorial();
+  }
+
+  async function cargarHistorial() {
+    const resp = await fetch('/api/historial');
+    const lista = await resp.json();
+    const cont = document.getElementById('historial-contenido');
+    if (!lista.length) { cont.innerHTML = '<p class="text-gray-600">Sin investigaciones anteriores en esta sesión.</p>'; return; }
+    const estadoColor = { completado: 'text-green-400', en_progreso: 'text-yellow-400', error: 'text-red-400' };
+    cont.innerHTML = lista.map(inv => `
+      <div class="flex items-center justify-between p-3 rounded-lg bg-omnis-900 border border-gray-800">
+        <div>
+          <span class="text-white font-semibold">${inv.objetivo}</span>
+          <span class="ml-2 text-gray-600">${inv.modo_agente ? '🤖' : '⚙️'}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="${estadoColor[inv.estado] || 'text-gray-400'}">${inv.estado}</span>
+          <span class="text-gray-600">${new Date(inv.inicio).toLocaleString('es-ES')}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function descargarInforme() {
+    if (!informeActual) return;
+    const blob = new Blob([informeActual], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `omnis-informe-${new Date().toISOString().slice(0,19).replace(/[:.]/g, '-')}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  cargarDisciplinas();
+</script>
+</body>
+</html>
