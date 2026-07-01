@@ -1,0 +1,279 @@
+{
+  "common": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "retry": "Reintentar",
+    "submit": "Enviar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "download": "Descargar",
+    "upload": "Subir",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "clear": "Limpiar",
+    "reset": "Restablecer",
+    "start": "Iniciar",
+    "stop": "Detener",
+    "pause": "Pausar",
+    "resume": "Reanudar",
+    "finish": "Finalizar",
+    "yes": "Sí",
+    "no": "No",
+    "ok": "Aceptar",
+    "warning": "Advertencia",
+    "info": "Información",
+    "tips": "Consejos",
+    "optional": "Opcional",
+    "required": "Obligatorio",
+    "noData": "Sin datos disponibles",
+    "comingSoon": "Próximamente"
+  },
+  "meta": {
+    "title": "MiroFish - Predice el Futuro",
+    "description": "MiroFish - Sistema de Simulación de Opinión con Inteligencia de Enjambre"
+  },
+  "home": {
+    "tagline": "Motor de Inteligencia de Enjambre Conciso y Universal",
+    "heroTitle": "Predice el futuro antes de que ocurra",
+    "heroSubtitle": "Sube tus documentos y deja que millones de agentes autónomos simulen escenarios, predigan tendencias y generen informes de inteligencia accionables.",
+    "heroButton": "Comenzar simulación",
+    "learnMore": "Saber más",
+    "features": {
+      "title": "Capacidades del sistema",
+      "graphRag": {
+        "title": "GraphRAG",
+        "description": "Extracción de semillas y construcción de grafos de conocimiento para representación contextual profunda."
+      },
+      "multiAgent": {
+        "title": "Multi-Agente",
+        "description": "Miles de agentes autónomos interactúan en paralelo en plataformas duales de simulación."
+      },
+      "prediction": {
+        "title": "Predicción",
+        "description": "Modelos de predicción para opinión pública, mercados financieros y escenarios creativos."
+      },
+      "report": {
+        "title": "Informes",
+        "description": "Agente generador de informes con herramientas de análisis interactivo y síntesis profunda."
+      }
+    }
+  },
+  "steps": {
+    "step1": {
+      "name": "Construir grafo",
+      "description": "Extracción de semillas y construcción con GraphRAG"
+    },
+    "step2": {
+      "name": "Configurar entorno",
+      "description": "Extracción de entidades y configuración de agentes"
+    },
+    "step3": {
+      "name": "Simulación",
+      "description": "Simulación paralela en plataforma dual con memoria dinámica"
+    },
+    "step4": {
+      "name": "Informe",
+      "description": "Análisis del Agente de Informes con herramientas interactivas"
+    },
+    "step5": {
+      "name": "Interacción",
+      "description": "Chat con individuos simulados"
+    }
+  },
+  "stepContent": {
+    "step1": {
+      "title": "Construcción del grafo de conocimiento",
+      "subtitle": "Extracción de semillas y GraphRAG",
+      "uploadTitle": "Subir documentos semilla",
+      "uploadDesc": "Sube archivos PDF, Markdown o texto plano como base de conocimiento para la simulación.",
+      "uploadButton": "Seleccionar archivos",
+      "uploadDrag": "Arrastra y suelta archivos aquí o haz clic para seleccionar",
+      "uploadFormats": "Formatos admitidos: PDF, MD, TXT (máx. 50 MB por archivo)",
+      "extractTitle": "Extracción ontológica",
+      "extractDesc": "El sistema extrae entidades, relaciones y conceptos clave para construir el grafo de conocimiento.",
+      "graphTitle": "Construcción del grafo",
+      "graphDesc": "GraphRAG construye un grafo semántico que conecta todos los conceptos extraídos con sus relaciones.",
+      "startButton": "Iniciar construcción del grafo",
+      "processing": "Procesando documentos...",
+      "extracting": "Extrayendo ontología...",
+      "building": "Construyendo grafo...",
+      "completed": "Grafo de conocimiento construido correctamente"
+    },
+    "step2": {
+      "title": "Configuración del entorno de simulación",
+      "subtitle": "Extracción de entidades y configuración de agentes",
+      "entitiesTitle": "Entidades identificadas",
+      "entitiesDesc": "Personas, organizaciones y conceptos que actuarán como agentes en la simulación.",
+      "personasTitle": "Generación de perfiles de agente",
+      "personasDesc": "Cada entidad recibe un perfil psicológico, ideológico y comportamental basado en los datos extraídos.",
+      "platformTitle": "Configuración de plataformas",
+      "platformDesc": "Selecciona las plataformas de simulación: Twitter/X y Reddit están disponibles en modo paralelo.",
+      "twitter": "Twitter / X",
+      "reddit": "Reddit",
+      "roundsLabel": "Rondas de simulación",
+      "roundsHint": "Recomendado: menos de 40 rondas para las primeras pruebas (alto consumo de tokens).",
+      "startButton": "Configurar entorno",
+      "processing": "Generando perfiles de agente..."
+    },
+    "step3": {
+      "title": "Ejecución de la simulación",
+      "subtitle": "Simulación paralela con memoria dinámica",
+      "status": {
+        "pending": "Pendiente",
+        "running": "En ejecución",
+        "completed": "Completada",
+        "failed": "Error"
+      },
+      "roundLabel": "Ronda",
+      "agentsLabel": "Agentes activos",
+      "interactionsLabel": "Interacciones totales",
+      "timeLabel": "Tiempo transcurrido",
+      "platformTwitter": "Plataforma Twitter/X",
+      "platformReddit": "Plataforma Reddit",
+      "startButton": "Iniciar simulación",
+      "stopButton": "Detener simulación",
+      "warning": "Aviso: La simulación consume un número significativo de tokens. Comienza con pocas rondas.",
+      "completed": "Simulación completada"
+    },
+    "step4": {
+      "title": "Generación del informe",
+      "subtitle": "Agente de informes con herramientas interactivas",
+      "generating": "Generando informe...",
+      "keyFacts": "Hechos clave",
+      "entities": "Entidades principales",
+      "relationChains": "Cadenas de relaciones",
+      "tools": {
+        "insightForge": {
+          "name": "InsightForge",
+          "description": "Análisis profundo con atribución de causas y seguimiento de eventos."
+        },
+        "panoramaSearch": {
+          "name": "PanoramaSearch",
+          "description": "Búsqueda panorámica de patrones y tendencias en los datos de simulación."
+        },
+        "quickSearch": {
+          "name": "QuickSearch",
+          "description": "Búsqueda rápida de hechos y referencias dentro del grafo de conocimiento."
+        },
+        "interviewSubAgent": {
+          "name": "InterviewSubAgent",
+          "description": "Entrevista virtual a agentes simulados para obtener perspectivas individuales."
+        }
+      },
+      "downloadReport": "Descargar informe",
+      "completed": "Informe generado"
+    },
+    "step5": {
+      "title": "Interacción con agentes simulados",
+      "subtitle": "Chat con individuos del universo simulado",
+      "selectAgent": "Selecciona un agente",
+      "searchAgent": "Buscar agente...",
+      "chatPlaceholder": "Escribe tu mensaje...",
+      "sendButton": "Enviar",
+      "noAgents": "No hay agentes disponibles. Completa la simulación primero.",
+      "typing": "El agente está escribiendo...",
+      "surveys": "Encuestas",
+      "surveyTitle": "Encuesta a agentes",
+      "surveyPlaceholder": "Escribe tu pregunta para todos los agentes...",
+      "surveyButton": "Lanzar encuesta"
+    }
+  },
+  "upload": {
+    "title": "Subir documentos",
+    "progress": "Progreso de subida",
+    "success": "Archivo subido correctamente",
+    "error": "Error al subir el archivo",
+    "tooLarge": "El archivo supera el límite de 50 MB",
+    "invalidType": "Tipo de archivo no permitido. Usa PDF, MD o TXT.",
+    "removing": "Eliminando archivo..."
+  },
+  "simulation": {
+    "title": "Simulación en curso",
+    "preparing": "Preparando agentes...",
+    "initializing": "Inicializando plataformas...",
+    "running": "Simulación en ejecución — ronda {round} de {total}",
+    "finishing": "Finalizando simulación...",
+    "done": "Simulación completada exitosamente",
+    "error": "Error durante la simulación",
+    "memoryUpdate": "Actualizando memoria de agentes...",
+    "contextSharing": "Compartiendo contexto entre agentes...",
+    "interactionLog": "Registro de interacciones"
+  },
+  "report": {
+    "title": "Informe de inteligencia",
+    "summary": "Resumen ejecutivo",
+    "details": "Análisis detallado",
+    "generating": "El Agente de Informes está generando el análisis...",
+    "toolCall": "Usando herramienta: {tool}",
+    "reflection": "Reflexión del agente...",
+    "completed": "Informe completado",
+    "sections": {
+      "overview": "Visión general",
+      "keyFindings": "Hallazgos clave",
+      "entities": "Entidades y actores",
+      "timeline": "Línea temporal",
+      "relations": "Red de relaciones",
+      "predictions": "Predicciones",
+      "recommendations": "Recomendaciones"
+    }
+  },
+  "api": {
+    "errors": {
+      "networkError": "Error de red. Comprueba tu conexión.",
+      "serverError": "Error del servidor. Inténtalo de nuevo.",
+      "unauthorized": "No autorizado. Verifica tu configuración.",
+      "notFound": "Recurso no encontrado.",
+      "timeout": "La solicitud ha superado el tiempo límite.",
+      "invalidConfig": "Configuración inválida. Revisa las variables de entorno.",
+      "missingApiKey": "Falta la clave API del LLM. Configura LLM_API_KEY en tu fichero .env.",
+      "missingZepKey": "Falta ZEP_API_KEY. Regístrate gratis en https://app.getzep.com"
+    },
+    "success": {
+      "fileUploaded": "Archivo procesado correctamente.",
+      "graphBuilt": "Grafo de conocimiento construido.",
+      "envConfigured": "Entorno configurado.",
+      "simulationStarted": "Simulación iniciada.",
+      "reportGenerated": "Informe generado."
+    }
+  },
+  "config": {
+    "title": "Configuración",
+    "llm": {
+      "title": "Modelo de lenguaje (LLM)",
+      "apiKey": "Clave API",
+      "baseUrl": "URL base",
+      "modelName": "Nombre del modelo",
+      "hint": "Compatible con cualquier API en formato OpenAI. Recomendado: Groq (gratuito)."
+    },
+    "zep": {
+      "title": "Memoria de agentes (Zep Cloud)",
+      "apiKey": "Clave API de Zep",
+      "hint": "Tier gratuito disponible en https://app.getzep.com"
+    },
+    "simulation": {
+      "title": "Parámetros de simulación",
+      "maxRounds": "Rondas máximas",
+      "roundsHint": "Recomendado: entre 5 y 40 rondas. Más rondas = mayor consumo de tokens."
+    }
+  },
+  "nav": {
+    "home": "Inicio",
+    "simulation": "Simulación",
+    "reports": "Informes",
+    "settings": "Configuración",
+    "language": "Idioma"
+  },
+  "language": {
+    "es": "Español",
+    "en": "English",
+    "zh": "中文"
+  }
+}

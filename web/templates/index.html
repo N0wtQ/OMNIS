@@ -57,6 +57,27 @@
 
   <main class="max-w-6xl mx-auto px-4 py-8 space-y-6">
 
+    <!-- PANEL MIROFISH -->
+    <section class="fade-in" id="mirofish-panel">
+      <div class="rounded-xl p-5 flex items-center justify-between gap-4"
+           style="background: linear-gradient(135deg, #0d1529 0%, #111d3a 100%); border: 1px solid #ffd70033;">
+        <div class="flex items-center gap-4">
+          <div class="text-3xl">🐟</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-white tracking-widest">MiroFish</h2>
+              <span id="mirofish-status" class="text-xs px-2 py-0.5 rounded-full border border-gray-700 text-gray-500">Comprobando...</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">Motor de simulación multi-agente · Predicción de opinión pública · GraphRAG</p>
+          </div>
+        </div>
+        <a id="mirofish-link" href="http://localhost:3000" target="_blank"
+           class="btn-gold px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase transition whitespace-nowrap">
+          Abrir MiroFish →
+        </a>
+      </div>
+    </section>
+
     <!-- FORMULARIO -->
     <section class="card card-accent rounded-xl p-6 fade-in">
       <h2 class="text-sm font-semibold text-gray-400 mb-4 tracking-widest uppercase">Nueva investigación</h2>
@@ -339,6 +360,30 @@
   }
 
   cargarDisciplinas();
+
+  // Comprobar si MiroFish está activo
+  async function comprobarMiroFish() {
+    const badge = document.getElementById('mirofish-status');
+    const link = document.getElementById('mirofish-link');
+    try {
+      const resp = await fetch('/api/mirofish/status');
+      const data = await resp.json();
+      if (data.activo) {
+        badge.textContent = '● Activo';
+        badge.className = 'text-xs px-2 py-0.5 rounded-full border border-green-700 text-green-400';
+        link.href = data.url || 'http://localhost:3000';
+      } else {
+        badge.textContent = 'No iniciado';
+        badge.className = 'text-xs px-2 py-0.5 rounded-full border border-gray-700 text-gray-500';
+      }
+    } catch {
+      badge.textContent = 'No iniciado';
+      badge.className = 'text-xs px-2 py-0.5 rounded-full border border-gray-700 text-gray-500';
+    }
+  }
+
+  comprobarMiroFish();
+  setInterval(comprobarMiroFish, 15000);
 </script>
 </body>
 </html>

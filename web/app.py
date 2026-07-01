@@ -149,6 +149,19 @@ def historial():
     return jsonify(sorted(resumen, key=lambda x: x["inicio"], reverse=True))
 
 
+@app.route("/api/mirofish/status")
+def mirofish_status():
+    """Comprueba si MiroFish está activo en el puerto 3000."""
+    import urllib.request
+    mirofish_url = os.environ.get("MIROFISH_URL", "http://localhost:3000")
+    try:
+        req = urllib.request.urlopen(mirofish_url, timeout=2)
+        activo = req.status < 500
+    except Exception:
+        activo = False
+    return jsonify({"activo": activo, "url": mirofish_url})
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     debug = os.environ.get("FLASK_ENV") == "development"

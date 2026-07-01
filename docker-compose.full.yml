@@ -1,0 +1,51 @@
+# ============================================================
+#  O.M.N.I.S + MiroFish-ES — Stack completo
+#
+#  Levanta los dos sistemas con un solo comando:
+#    docker compose -f docker-compose.full.yml up --build
+#
+#  Puertos:
+#    http://localhost:5001  →  O.M.N.I.S (interfaz web + CLI)
+#    http://localhost:3000  →  MiroFish-ES (simulación multi-agente)
+# ============================================================
+
+services:
+
+  # ── O.M.N.I.S — Sistema de inteligencia ─────────────────────
+  omnis:
+    build:
+      context: .
+      dockerfile: Dockerfile.omnis
+    container_name: omnis
+    ports:
+      - "5001:5001"
+    env_file:
+      - .env
+    volumes:
+      - ./reports:/app/reports
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:5001/api/disciplinas"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── MiroFish-ES — Motor de simulación en español ─────────────
+  mirofish:
+    build:
+      context: ./mirofish-es
+      dockerfile: Dockerfile
+    container_name: mirofish-es
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./mirofish-es/.env
+    volumes:
+      - ./mirofish-es/uploads:/app/backend/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3000"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 60s
