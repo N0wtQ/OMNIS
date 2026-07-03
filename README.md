@@ -46,7 +46,31 @@ Dispone de **dos modos de operación**:
 
 ## Instalación
 
-### Requisitos previos
+### 🚀 Instalación rápida en Linux Mint / Ubuntu (automática)
+
+Un solo comando lo hace todo (Python, entorno, dependencias y configuración):
+
+```bash
+git clone https://github.com/N0wtQ/OMNIS.git
+cd OMNIS
+chmod +x instalar-mint.sh
+./instalar-mint.sh
+```
+
+El script instala lo necesario y, al terminar, ofrece arrancar O.M.N.I.S
+directamente. Luego abre `http://localhost:5001` en el navegador.
+
+Para volver a arrancarlo otro día:
+
+```bash
+cd OMNIS && source .venv/bin/activate && python web/app.py
+```
+
+---
+
+### Instalación manual (cualquier sistema)
+
+#### Requisitos previos
 
 - Python 3.9 o superior
 - pip
