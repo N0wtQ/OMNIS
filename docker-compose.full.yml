@@ -37,7 +37,9 @@ services:
       dockerfile: Dockerfile
     container_name: mirofish-es
     ports:
-      - "3000:3000"
+      - "3000:3000"   # frontend Vue (interfaz en español)
+      # El backend (5001) queda interno al contenedor: el frontend lo consume
+      # por su propio proxy. No se mapea al host para no chocar con OMNIS (5001).
     env_file:
       - ./mirofish-es/.env
     volumes:
@@ -47,5 +49,5 @@ services:
       test: ["CMD", "curl", "-sf", "http://localhost:3000"]
       interval: 30s
       timeout: 15s
-      retries: 5
-      start_period: 60s
+      retries: 8
+      start_period: 120s
