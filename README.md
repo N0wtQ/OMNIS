@@ -25,7 +25,15 @@ Dispone de **dos modos de operación**:
 | Modo | Descripción | Requiere |
 |------|-------------|----------|
 | ⚙️ **Clásico** | APIs públicas gratuitas (DNS, WHOIS, Blockchain, etc.) | Solo Python |
-| 🤖 **Multi-Agente** | Cada disciplina actúa como agente autónomo con LLM | API key de Groq (gratis) |
+| 🤖 **Multi-Agente** | Cada disciplina actúa como agente autónomo con LLM | API key de Gemini o Groq (gratis) |
+
+### ✨ Funciones destacadas
+
+- 🛰️ **Globo terráqueo 3D** (CesiumJS) con geocodificación y vuelos en vivo — pinta automáticamente las coordenadas GEOINT
+- 📄 **Informes en PDF profesionales** con portada, gráficos, tablas y mapa incrustado
+- 📚 **Metodología GIJN** integrada (guías, bases de datos por país, detección de contenido IA)
+- 📱 **Multiplataforma (PWA)** — instalable en móvil, tablet y escritorio desde el navegador
+- 🤖 Motor **multi-agente** con Google Gemini o Groq (ambos con tier gratuito)
 
 ---
 
@@ -101,7 +109,10 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Edita .env y añade tu GROQ_API_KEY si quieres el modo multi-agente
+# Edita .env y añade tu clave si quieres el modo multi-agente:
+#   GEMINI_API_KEY=...   (Google Gemini — https://aistudio.google.com/apikey)
+#   GROQ_API_KEY=...     (Groq — https://console.groq.com, gratis)
+# Si defines las dos, Gemini tiene prioridad. Sin clave, funciona el modo clásico.
 ```
 
 ### 5. (Opcional) Instalar herramientas externas OSINT
@@ -134,6 +145,18 @@ O con gunicorn (producción):
 ```bash
 gunicorn --chdir web app:app --bind 0.0.0.0:5001 --workers 2
 ```
+
+### Funciones de la interfaz web
+
+- **🛰️ Globo 3D** — botón en la cabecera. Geocodifica objetivos, muestra vuelos en
+  vivo (ADS-B) y pinta automáticamente las coordenadas de una investigación GEOINT
+  (`/globo?inv=<id>`). Desde el globo puedes "Guardar el mapa en el PDF".
+- **📄 Descargar PDF** — al completar una investigación, genera un informe PDF
+  profesional (portada, gráfico de confianza, tablas por disciplina, IOC, GIJN,
+  recomendaciones y mapa si lo capturaste).
+- **📱 Instalar como app (PWA)** — en Chrome/Edge aparece el icono de instalar en la
+  barra de direcciones; en Android "Añadir a pantalla de inicio"; en iOS Safari,
+  Compartir → "Añadir a pantalla de inicio". Funciona en móvil, tablet y escritorio.
 
 ### Motor Multi-Agente (MiroFish-style)
 
@@ -199,7 +222,7 @@ O.M.N.I.S incluye `render.yaml` y `Procfile` listos para desplegar en [Render.co
 2. Ve a [render.com](https://render.com) → **New Web Service** → conecta tu repo
 3. Render detecta automáticamente la configuración del `render.yaml`
 4. En **Environment Variables**, añade:
-   - `GROQ_API_KEY` → tu clave de Groq (tier gratuito)
+   - `GEMINI_API_KEY` → tu clave de Google Gemini (o `GROQ_API_KEY` para Groq)
    - `SECRET_KEY` → Render la genera automáticamente
 5. Haz clic en **Deploy** → en ~2 minutos tendrás la URL pública
 
@@ -216,6 +239,7 @@ OMNIS/
 ├── README.md                # Este archivo
 ├── omnis.py                 # CLI entrada
 ├── requirements.txt         # Dependencias Python
+├── instalar-mint.sh         # Instalador automático (Linux Mint / Ubuntu)
 ├── setup.sh                 # Instalador de herramientas externas
 ├── Procfile                 # Para Render/Heroku
 ├── render.yaml              # Blueprint de despliegue gratuito
@@ -223,11 +247,17 @@ OMNIS/
 ├── config/
 │   └── tools.yaml           # Catálogo de herramientas
 ├── web/
-│   ├── app.py               # Servidor Flask + SSE (Server-Sent Events)
+│   ├── app.py               # Servidor Flask + SSE + API (PDF, globo, PWA)
+│   ├── static/
+│   │   ├── manifest.json    # PWA — metadatos de instalación
+│   │   ├── service-worker.js# PWA — caché de shell / offline
+│   │   └── icons/           # Iconos de la app (192, 512)
 │   └── templates/
-│       └── index.html       # Interfaz web (Tailwind CSS, vanilla JS)
+│       ├── index.html       # Panel de control (Tailwind, vanilla JS, PWA)
+│       └── globo.html       # Globo terráqueo 3D (CesiumJS)
 ├── modules/
-│   ├── multiagent.py        # Motor multi-agente (MiroFish-style + Groq)
+│   ├── multiagent.py        # Motor multi-agente (Gemini / Groq)
+│   ├── gijn.py              # Recursos y metodología GIJN
 │   ├── osint.py
 │   ├── socmint.py
 │   ├── geoint.py
@@ -238,7 +268,9 @@ OMNIS/
 │   └── techint.py
 ├── core/
 │   ├── orchestrator.py      # Motor AEAD clásico
-│   ├── report.py            # Generador de informes
+│   ├── report.py            # Generador de informes (texto)
+│   ├── report_data.py       # Datos estructurados para PDF/JSON
+│   ├── pdf_report.py        # Generador de informes PDF (reportlab)
 │   ├── ioc_extractor.py     # Extractor de IOC
 │   └── confidence.py        # Puntuación de confianza
 └── reports/                 # Directorio de salida

@@ -30,6 +30,17 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/service-worker.js")
+def service_worker():
+    """Sirve el service worker desde la raíz para que su ámbito sea todo el sitio."""
+    from flask import send_from_directory
+    resp = send_from_directory(app.static_folder, "service-worker.js")
+    resp.headers["Content-Type"] = "application/javascript"
+    resp.headers["Service-Worker-Allowed"] = "/"
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 @app.route("/api/disciplinas")
 def disciplinas():
     return jsonify(list(DISCIPLINE_MODULES.keys()))
