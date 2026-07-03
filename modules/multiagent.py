@@ -35,6 +35,22 @@ from core.report import build_report
 
 _TS = lambda: datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+import re as _re
+_IP_RE = _re.compile(r"^\d{1,3}(\.\d{1,3}){3}$")
+_DOMINIO_RE = _re.compile(r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63})+$")
+
+
+def _es_dominio_o_empresa(objetivo: str) -> bool:
+    """True si el objetivo es un dominio o un nombre de empresa (no IP, usuario o email)."""
+    t = (objetivo or "").strip()
+    if not t or "@" in t or _IP_RE.match(t):
+        return False
+    # Dominio (ej. empresa.com) o nombre de empresa (contiene S.L., S.A., Inc, Ltd…)
+    if _DOMINIO_RE.match(t.lower()):
+        return True
+    return bool(_re.search(r"\b(s\.?l\.?|s\.?a\.?|inc|ltd|llc|gmbh|s\.?l\.?u\.?)\b", t.lower()))
+
+
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 DEFAULT_MODEL_GROQ = "llama-3.3-70b-versatile"
 DEFAULT_MODEL_GEMINI = "gemini-2.0-flash"
@@ -98,6 +114,24 @@ SYNTHESIS_PERSONA = (
     "convergencia de evidencias independientes.\n"
     "4. EVIDENCIA NEGATIVA: declara qué búsquedas no dieron resultados y qué límite imponen.\n"
     "5. Markdown puro, sin HTML. Responde en español, tono sobrio y defendible."
+)
+
+SYNTHESIS_PERSONA_CORP = (
+    "Eres O.M.N.I.S, analista de inteligencia CORPORATIVA experto en investigar "
+    "empresas a través de su dominio web. Tu lema: 'Datos sin contexto no son "
+    "inteligencia; contexto sin datos es ficción'.\n"
+    "Reglas de redacción OBLIGATORIAS:\n"
+    "1. NARRATIVA, NO LISTAS: no enumeres datos técnicos en crudo; explícalos. "
+    "En vez de 'A records: 45.60.x.x' escribe 'usa la red de seguridad de Imperva, "
+    "lo que indica que prioriza la protección frente a DDoS y oculta su servidor real'.\n"
+    "2. Cada hallazgo debe decir QUÉ significa, POR QUÉ es relevante y QUÉ implica "
+    "(riesgo, oportunidad o estrategia) para la empresa.\n"
+    "3. Cuenta la HISTORIA de la empresa: quién es, a qué se dedica, cómo se organiza "
+    "técnica y corporativamente, y qué riesgos/oportunidades presenta.\n"
+    "4. Traduce toda la infraestructura técnica (Imperva, Cloudflare, Microsoft 365, "
+    "nginx, BIND…) a implicaciones de negocio.\n"
+    "5. Usa lenguaje narrativo de confianza y distingue hecho de inferencia. "
+    "Markdown puro, sin HTML. Responde en español."
 )
 
 
@@ -225,34 +259,58 @@ class AgenteSintesis:
             for disc, res in resultados_por_disciplina.items()
         )
 
-        usuario = (
+        cabecera = (
             f"OBJETIVO: {objetivo}\nCONSULTA: {consulta}\n\n"
             f"MATERIAL DE LOS AGENTES:\n{resumen_agentes}\n\n"
-            f"Redacta un INFORME DE INTELIGENCIA PROFESIONAL en español, Markdown puro (sin "
-            f"HTML), con esta estructura de 7 secciones EXACTA:\n\n"
-            f"## 1. Encabezado y datos del mandato\n"
-            f"(objetivo, pregunta clave de inteligencia, fecha, disciplinas ejecutadas)\n\n"
-            f"## 2. Resumen ejecutivo\n"
-            f"(respuesta sintética a la pregunta clave, hallazgos principales, hipótesis "
-            f"dominante y confianza global en lenguaje narrativo — máx. una página)\n\n"
-            f"## 3. Metodología\n"
-            f"(herramientas y fuentes consultadas, alcance y limitaciones del método)\n\n"
-            f"## 4. Evidencias recopiladas\n"
-            f"(lista de datos objetivos observados, agrupados por disciplina)\n\n"
-            f"## 5. Análisis\n"
-            f"(por disciplina: **Datos observados** → **Interpretación** [separa hecho de "
-            f"inferencia] → **Hipótesis en competencia** evaluadas por convergencia de "
-            f"evidencias, con confianza narrativa)\n\n"
-            f"## 6. Límites y recomendaciones\n"
-            f"(evidencia negativa y lo que NO se pudo verificar; próximos pasos accionables "
-            f"con enfoque periodístico GIJN)\n\n"
-            f"## 7. Apéndices\n"
-            f"(fuentes/URLs consultadas y nota de cadena de custodia)\n\n"
-            f"Usa SIEMPRE lenguaje narrativo de confianza, nunca 'Alto/Medio/Bajo' a secas."
         )
 
+        if _es_dominio_o_empresa(objetivo):
+            # Informe CORPORATIVO narrativo (empresa a través de su dominio)
+            persona = SYNTHESIS_PERSONA_CORP
+            usuario = cabecera + (
+                "Redacta un INFORME DE INTELIGENCIA CORPORATIVA en español, Markdown puro "
+                "(sin HTML), NARRATIVO (no listas de datos). Traduce cada dato técnico a "
+                "implicaciones de negocio. Usa esta estructura:\n\n"
+                "## 📌 Identificación de la empresa\n(quién es: nombre, sector, ubicación, tamaño estimado)\n\n"
+                "## 🏢 Perfil corporativo y estructura\n(estructura legal, administradores, beneficiarios, subsidiarias si constan)\n\n"
+                "## 💻 Infraestructura tecnológica\n(hosting/CDN/WAF, correo, servidor web, DNS — traducido a qué revela de la empresa)\n\n"
+                "## 🔐 Postura de ciberseguridad\n(fortalezas y vulnerabilidades detectadas, con implicación)\n\n"
+                "## 📱 Presencia digital y redes sociales\n(perfiles hallados y qué sugieren; distingue personal de corporativo)\n\n"
+                "## 🌐 Contexto sectorial y competitivo\n(sector probable, posicionamiento, con reservas)\n\n"
+                "## ⚠️ Riesgos y oportunidades\n(cada uno con su nivel de confianza narrativo y justificación)\n\n"
+                "## 🎯 Resumen ejecutivo y conclusión\n(5-7 líneas + recomendaciones accionables)\n\n"
+                "## 📚 Fuentes y metodología\n(fuentes consultadas y nota de cadena de custodia)\n\n"
+                "Cuenta la HISTORIA de la empresa. Cada hallazgo: qué significa, por qué importa, qué implica."
+            )
+        else:
+            # Informe de inteligencia PROFESIONAL de 7 secciones (genérico)
+            persona = SYNTHESIS_PERSONA
+            usuario = cabecera + (
+                "Redacta un INFORME DE INTELIGENCIA PROFESIONAL en español, Markdown puro (sin "
+                "HTML), con esta estructura de 7 secciones EXACTA:\n\n"
+                "## 1. Encabezado y datos del mandato\n"
+                "(objetivo, pregunta clave de inteligencia, fecha, disciplinas ejecutadas)\n\n"
+                "## 2. Resumen ejecutivo\n"
+                "(respuesta sintética a la pregunta clave, hallazgos principales, hipótesis "
+                "dominante y confianza global en lenguaje narrativo — máx. una página)\n\n"
+                "## 3. Metodología\n"
+                "(herramientas y fuentes consultadas, alcance y limitaciones del método)\n\n"
+                "## 4. Evidencias recopiladas\n"
+                "(lista de datos objetivos observados, agrupados por disciplina)\n\n"
+                "## 5. Análisis\n"
+                "(por disciplina: **Datos observados** → **Interpretación** [separa hecho de "
+                "inferencia] → **Hipótesis en competencia** evaluadas por convergencia de "
+                "evidencias, con confianza narrativa)\n\n"
+                "## 6. Límites y recomendaciones\n"
+                "(evidencia negativa y lo que NO se pudo verificar; próximos pasos accionables "
+                "con enfoque periodístico GIJN)\n\n"
+                "## 7. Apéndices\n"
+                "(fuentes/URLs consultadas y nota de cadena de custodia)\n\n"
+                "Usa SIEMPRE lenguaje narrativo de confianza, nunca 'Alto/Medio/Bajo' a secas."
+            )
+
         try:
-            sintesis = _llamar_llm(self.client, self.model, SYNTHESIS_PERSONA, usuario,
+            sintesis = _llamar_llm(self.client, self.model, persona, usuario,
                                    json_mode=False, max_tokens=4096)
         except Exception as e:
             sintesis = f"Error en síntesis: {e}"

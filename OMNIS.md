@@ -210,6 +210,21 @@ a PDF. Cada investigación produce un informe con las siguientes secciones:
 - **Recomendaciones** — próximos pasos, acciones, áreas de profundización
 - **Fuentes** — cada hallazgo con fuente y timestamp
 
+### Modo corporativo (dominios y empresas)
+
+Cuando el objetivo es un **dominio o una empresa**, el Agente Síntesis genera un
+**informe de inteligencia corporativa NARRATIVO** que cuenta la historia de la
+empresa (quién es, qué hace, cómo opera, con quién se relaciona, qué
+riesgos/oportunidades presenta). Traduce cada dato técnico a implicaciones de
+negocio (p. ej. "usa Imperva → prioriza la seguridad y oculta su servidor real";
+"SPF con Outlook → usa Microsoft 365"). Estructura de 9 apartados: identificación,
+perfil corporativo, infraestructura tecnológica, postura de ciberseguridad,
+presencia digital, contexto sectorial, riesgos y oportunidades, resumen ejecutivo
+y fuentes.
+
+Para el resto de objetivos (IP, usuario, correo) se usa el estándar profesional
+de 7 secciones descrito a continuación.
+
 ### Estándar de informe profesional (modo multi-agente)
 
 En modo multi-agente, el Agente Síntesis redacta como un analista de inteligencia
