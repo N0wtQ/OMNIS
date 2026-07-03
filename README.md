@@ -74,6 +74,21 @@ Para volver a arrancarlo otro día:
 cd OMNIS && source .venv/bin/activate && python web/app.py
 ```
 
+### 🔄 Actualizar a la última versión
+
+Cuando haya novedades fusionadas en GitHub, trae los cambios con un comando:
+
+```bash
+cd OMNIS
+./actualizar.sh
+```
+
+Hace `git pull` + actualiza dependencias sin tocar tu `.env`. (Manual:
+`git pull origin main && pip install -r requirements.txt`.)
+
+- **Render.com** se redespliega **solo** al fusionar en `main` (auto-deploy).
+- La **PWA** del móvil se actualiza sola al reabrir la app.
+
 ---
 
 ### Instalación manual (cualquier sistema)
