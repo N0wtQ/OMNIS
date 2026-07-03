@@ -305,6 +305,12 @@ class MultiAgentEngine:
                 ))
             findings_by_discipline[disciplina] = findings
 
+        try:
+            from modules import gijn
+            gijn_section = gijn.construir_seccion(objetivo, consulta, self.disciplinas)
+        except Exception:
+            gijn_section = ""
+
         return build_report(
             query=consulta,
             findings_by_discipline=findings_by_discipline,
@@ -314,4 +320,5 @@ class MultiAgentEngine:
                 "  Generado por el motor multi-agente O.M.N.I.S.\n"
                 "  Revisa la sección de correlación cruzada para recomendaciones detalladas."
             ),
+            gijn_section=gijn_section,
         )

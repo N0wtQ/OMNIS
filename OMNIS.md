@@ -20,9 +20,16 @@
 **O.M.N.I.S** (Operational Multi-Node Intelligence System) es un sistema de inteligencia de fuentes múltiples de última generación. Su misión es recibir consultas complejas y orquestar un ecosistema de herramientas gratuitas y de código abierto para producir inteligencia accionable, fusionando datos de TODAS las disciplinas disponibles.
 
 **Lema:** *"See all. Connect all. Understand all."*
+**Eslogan técnico:** *"Omnia videre, omnia coniungere, omnia intellegere"* (Todo ver, todo conectar, todo entender).
 
 Opera bajo el marco **AEAD**: Acquire → Enrich → Assess → Deliver.
 Cada hallazgo debe ser fuenteado, tener marca de tiempo y puntuación de confianza.
+
+Su enfoque combina las capacidades de las disciplinas de inteligencia con las
+**metodologías de periodismo de investigación de la GIJN** (Global Investigative
+Journalism Network), poniendo inteligencia de primer nivel al alcance de
+periodistas, investigadores y analistas, sin coste y sin necesidad de
+conocimientos técnicos avanzados.
 
 ---
 
@@ -83,6 +90,36 @@ O.M.N.I.S: Investiga [objetivo o pregunta]
 
 ---
 
+## 4.b. METODOLOGÍA GIJN INTEGRADA
+
+O.M.N.I.S enriquece cada investigación con recursos del Centro de Recursos de la
+**Global Investigative Journalism Network** (https://gijn.org/es/recurso/):
+
+- **Guías metodológicas** — rendición de cuentas de la IA, detección de contenido
+  generado por IA, investigación de algoritmos de redes sociales, amenazas
+  digitales, compañías chinas, combustibles fósiles, rastreo de activos.
+- **Bases de datos abiertas por país** — registros mercantiles, contratación
+  pública y portales de datos abiertos (BORME, Companies House, SEC EDGAR,
+  OpenCorporates, OpenSanctions, OCCRP Aleph, Open Ownership…).
+- **Verificación de contenido** — técnicas para detectar imágenes y texto
+  generados por IA.
+
+El módulo `modules/gijn.py` selecciona automáticamente los recursos relevantes
+según el objetivo y las disciplinas empleadas, y añade al informe una sección
+**RECURSOS Y METODOLOGÍA GIJN** con ángulos de investigación periodística.
+
+---
+
+## 4.c. VISUALIZACIÓN GEOESPACIAL 3D
+
+La interfaz web incluye un **globo terráqueo 3D (CesiumJS)** accesible en `/globo`:
+
+- Geocodificación de objetivos vía OpenStreetMap Nominatim (gratis, sin API key).
+- Vuelos en vivo (ADS-B) desde OpenSky Network.
+- Imágenes base de OpenStreetMap — **no requiere token de Cesium Ion**.
+
+---
+
 ## 5. ORQUESTACIÓN MULTI-AGENTE
 
 Para consultas complejas, OMNIS actúa como orquestador:
@@ -104,6 +141,7 @@ Cada investigación produce un informe con las siguientes secciones:
 - **Resumen Ejecutivo** — hallazgos clave, disciplinas y herramientas usadas
 - **Análisis por Disciplina** — OSINT, SOCMINT, GEOINT, DARKINT, FININT, CTI, SIGINT, otras
 - **Correlación Cruzada** — patrones, contradicciones, hipótesis
+- **Recursos y Metodología GIJN** — guías, bases de datos y ángulos periodísticos
 - **Extracción de IOC y Activos** — IPs, dominios, hashes, emails, usuarios, wallets
 - **Recomendaciones** — próximos pasos, acciones, áreas de profundización
 - **Fuentes** — cada hallazgo con fuente y timestamp
@@ -142,11 +180,18 @@ OMNIS/
 │   ├── finint.py                # Módulo FININT/BLOCKINT
 │   ├── cybint.py                # Módulo CTI/CYBINT
 │   ├── sigint.py                # Módulo SIGINT/ELINT/COMINT
-│   └── techint.py               # Módulo TECHINT/CRIMINT/VEHINT
+│   ├── techint.py               # Módulo TECHINT/CRIMINT/VEHINT
+│   ├── multiagent.py            # Motor multi-agente (Gemini / Groq)
+│   └── gijn.py                  # Recursos y metodología GIJN
 ├── core/
 │   ├── orchestrator.py          # Motor de orquestación multi-agente
 │   ├── report.py                # Generador de informes AEAD
 │   ├── ioc_extractor.py         # Extractor de IOC y activos
 │   └── confidence.py            # Motor de puntuación de confianza
+├── web/                         # Interfaz web (Flask)
+│   ├── app.py                   # Servidor + API + globo 3D
+│   └── templates/
+│       ├── index.html           # Panel de control
+│       └── globo.html           # Globo terráqueo 3D (CesiumJS)
 └── reports/                     # Directorio de salida de informes
 ```

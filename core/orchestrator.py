@@ -124,6 +124,13 @@ class Orchestrator:
         ctx.cross_correlation = self._cross_correlate(ctx)
         ctx.recommendations = self._generate_recommendations(ctx)
 
+        # Metodología GIJN — recursos periodísticos aplicables
+        try:
+            from modules import gijn
+            gijn_section = gijn.construir_seccion(target, query, self.disciplines)
+        except Exception:
+            gijn_section = ""
+
         # FASE 4: DELIVER — build report
         return build_report(
             query=ctx.query,
@@ -131,4 +138,5 @@ class Orchestrator:
             ioc=ctx.ioc,
             cross_correlation=ctx.cross_correlation,
             recommendations=ctx.recommendations,
+            gijn_section=gijn_section,
         )

@@ -149,6 +149,68 @@ def historial():
     return jsonify(sorted(resumen, key=lambda x: x["inicio"], reverse=True))
 
 
+@app.route("/globo")
+def globo():
+    """Vista del globo terráqueo 3D (CesiumJS)."""
+    return render_template("globo.html")
+
+
+@app.route("/api/globo/geocodificar")
+def globo_geocodificar():
+    """Geocodifica un objetivo vía OpenStreetMap Nominatim (gratis, sin API key)."""
+    import requests
+    q = (request.args.get("q") or "").strip()
+    if not q:
+        return jsonify({"resultados": []})
+    try:
+        resp = requests.get(
+            "https://nominatim.openstreetmap.org/search",
+            params={"q": q, "format": "json", "limit": 5},
+            headers={"User-Agent": "OMNIS-Intelligence/1.0 (research)"},
+            timeout=10,
+        )
+        data = resp.json()
+        resultados = [
+            {
+                "nombre": d.get("display_name"),
+                "lat": float(d["lat"]),
+                "lon": float(d["lon"]),
+            }
+            for d in data
+        ]
+    except Exception as e:
+        return jsonify({"resultados": [], "error": str(e)})
+    return jsonify({"resultados": resultados})
+
+
+@app.route("/api/globo/vuelos")
+def globo_vuelos():
+    """Vuelos en vivo (ADS-B) vía OpenSky Network — feed público sin API key."""
+    import requests
+    try:
+        resp = requests.get(
+            "https://opensky-network.org/api/states/all",
+            headers={"User-Agent": "OMNIS-Intelligence/1.0 (research)"},
+            timeout=15,
+        )
+        data = resp.json()
+        estados = data.get("states", []) or []
+        vuelos = []
+        for s in estados[:400]:
+            # s[5]=lon, s[6]=lat, s[7]=alt geométrica, s[1]=callsign
+            if s[5] is not None and s[6] is not None:
+                vuelos.append({
+                    "callsign": (s[1] or "").strip() or "N/A",
+                    "lon": s[5],
+                    "lat": s[6],
+                    "alt": s[7] or 0,
+                    "pais": s[2],
+                })
+        return jsonify({"vuelos": vuelos, "total": len(vuelos)})
+    except Exception as e:
+        return jsonify({"vuelos": [], "total": 0, "error": str(e)})
+
+
 @app.route("/api/mirofish/status")
 def mirofish_status():
     """Comprueba si MiroFish está activo en el puerto 3000."""
