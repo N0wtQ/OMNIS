@@ -120,6 +120,26 @@ La interfaz web incluye un **globo terráqueo 3D (CesiumJS)** accesible en `/glo
 
 ---
 
+## 4.d. INFORMES EN PDF PROFESIONALES
+
+Cada investigación puede exportarse a un **PDF profesional** desde el botón
+"📄 Descargar PDF" del panel. El PDF (`core/pdf_report.py`, basado en
+**reportlab** — Python puro, sin librerías de sistema) incluye:
+
+- **Portada** con objetivo, consulta, fecha y nivel de confianza
+- **Gráfico de barras** de confianza por disciplina
+- **Tablas por disciplina** con hallazgos y herramientas
+- **Tabla de IOC** (IPs, dominios, hashes, wallets…)
+- Secciones de **correlación cruzada**, **GIJN** y **recomendaciones**
+- **Mapa geoespacial** incrustado si se captura desde el globo 3D
+  (botón "Guardar este mapa en el PDF" en `/globo`)
+
+Endpoints: `GET /api/pdf/<id>` (descarga) y `POST /api/globo/captura/<id>`
+(captura del mapa). Se elige reportlab en lugar de WeasyPrint precisamente para
+no requerir dependencias de sistema y mantener la instalación accesible.
+
+---
+
 ## 5. ORQUESTACIÓN MULTI-AGENTE
 
 Para consultas complejas, OMNIS actúa como orquestador:

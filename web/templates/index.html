@@ -157,8 +157,11 @@
           </div>
           <pre id="informe-contenido" class="hidden text-xs text-gray-300 leading-relaxed font-mono"></pre>
           <div id="btn-descargar-wrapper" class="hidden mt-4 flex flex-wrap gap-3">
-            <button onclick="descargarInforme()" class="btn-gold px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase transition">
-              ↓ Descargar informe .txt
+            <button onclick="descargarPDF()" class="btn-gold px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase transition">
+              📄 Descargar PDF
+            </button>
+            <button onclick="descargarInforme()" class="btn-primary px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase transition">
+              ↓ Descargar .txt
             </button>
             <a id="btn-globo" href="#" class="hidden btn-primary px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase transition">
               🛰️ Ver en globo 3D
@@ -380,6 +383,12 @@
     a.download = `omnis-informe-${new Date().toISOString().slice(0,19).replace(/[:.]/g, '-')}.txt`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  function descargarPDF() {
+    if (!invActual) return;
+    // Abre el endpoint que genera el PDF al vuelo y fuerza la descarga.
+    window.location.href = `/api/pdf/${invActual}`;
   }
 
   cargarDisciplinas();

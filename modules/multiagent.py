@@ -231,6 +231,7 @@ class MultiAgentEngine:
 
         self.disciplinas = disciplinas or list(DISCIPLINE_PERSONAS.keys())
         self.model = model
+        self.ultimos_datos = None
         self.client = OpenAI(
             api_key=api_key or os.environ.get("GROQ_API_KEY", ""),
             base_url=base_url,
@@ -311,14 +312,33 @@ class MultiAgentEngine:
         except Exception:
             gijn_section = ""
 
-        return build_report(
+        recomendaciones = (
+            "  Generado por el motor multi-agente O.M.N.I.S.\n"
+            "  Revisa la sección de correlación cruzada para recomendaciones detalladas."
+        )
+
+        texto = build_report(
             query=consulta,
             findings_by_discipline=findings_by_discipline,
             ioc=ioc_global,
             cross_correlation=sintesis,
-            recommendations=(
-                "  Generado por el motor multi-agente O.M.N.I.S.\n"
-                "  Revisa la sección de correlación cruzada para recomendaciones detalladas."
-            ),
+            recommendations=recomendaciones,
             gijn_section=gijn_section,
         )
+
+        # Datos estructurados para exportación a PDF
+        try:
+            from core.report_data import construir_datos
+            self.ultimos_datos = construir_datos(
+                objetivo=objetivo,
+                consulta=consulta,
+                findings_by_discipline=findings_by_discipline,
+                ioc=ioc_global,
+                correlacion=sintesis,
+                recomendaciones=recomendaciones,
+                gijn=gijn_section,
+            )
+        except Exception:
+            self.ultimos_datos = None
+
+        return texto

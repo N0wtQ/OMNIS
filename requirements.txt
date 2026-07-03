@@ -15,5 +15,8 @@ jinja2>=3.1.0
 flask>=3.0.0
 gunicorn>=21.0.0
 
+# Informes en PDF (Python puro, sin librerías de sistema)
+reportlab>=4.0.0
+
 # Motor multi-agente (Groq — gratis, compatible OpenAI)
 openai>=1.30.0
