@@ -38,13 +38,15 @@ def construir_datos(
             "herramientas": list(dict.fromkeys(t for f in findings for t in f.tools_used)),
         })
 
-    # Cadena de custodia: hash SHA-256 del dato objetivo de cada evidencia
+    # Cadena de custodia: hash SHA-256 + código Admiralty de fiabilidad
+    from core.admiralty import codigo_admiralty
     fuentes = []
     for f in all_findings:
         sha = hashlib.sha256(f.description.encode("utf-8")).hexdigest()
+        adm = codigo_admiralty(f.tools_used, f.sources)
         for src in f.sources:
             fuentes.append(
-                f"[{f.timestamp or timestamp}] {src} — {f.description[:70]} "
+                f"[{adm}] [{f.timestamp or timestamp}] {src} — {f.description[:70]} "
                 f"(SHA-256: {sha[:16]}…)"
             )
 

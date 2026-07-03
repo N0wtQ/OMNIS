@@ -113,7 +113,11 @@ SYNTHESIS_PERSONA = (
     "3. HIPÓTESIS EN COMPETENCIA: plantea 2-3 hipótesis y evalúa cuál soporta mejor la "
     "convergencia de evidencias independientes.\n"
     "4. EVIDENCIA NEGATIVA: declara qué búsquedas no dieron resultados y qué límite imponen.\n"
-    "5. Markdown puro, sin HTML. Responde en español, tono sobrio y defendible."
+    "5. ESCRIBE PARA EL DECISOR con PIRÁMIDE INVERTIDA (lo más importante primero) y sé "
+    "AUTOCONCLUIBLE: no dejes cabos sueltos ni preguntas abiertas; reduce la incertidumbre.\n"
+    "6. NO JUZGUES, DOCUMENTA: nunca 'es culpable/ha delinquido'; usa 'los hechos son "
+    "compatibles con [hipótesis], con confianza [nivel]'.\n"
+    "7. Markdown puro, sin HTML. Responde en español, tono sobrio y defendible."
 )
 
 SYNTHESIS_PERSONA_CORP = (

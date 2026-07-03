@@ -124,17 +124,27 @@ def build_report(
                     block += "    Fuentes: " + ", ".join(f.sources) + "\n"
         discipline_blocks.append(block)
 
-    # Sources — con cadena de custodia (hash SHA-256 del dato)
+    # Sources — cadena de custodia (SHA-256) + código Admiralty de fiabilidad
     import hashlib
+    from core.admiralty import codigo_admiralty
     source_lines = []
     for f in all_findings:
         sha = hashlib.sha256(f.description.encode("utf-8")).hexdigest()
+        adm = codigo_admiralty(f.tools_used, f.sources)
         for src in f.sources:
             source_lines.append(
-                f"  • [{f.timestamp or timestamp}] {src} — {f.description[:60]} "
+                f"  • [{adm}] [{f.timestamp or timestamp}] {src} — {f.description[:60]} "
                 f"(SHA-256: {sha[:16]}…)"
             )
-    sources_text = "\n".join(source_lines) if source_lines else "  Sin fuentes registradas."
+    if source_lines:
+        codigos_usados = sorted({l.split("]")[0].strip("  [") for l in source_lines})
+        from core.admiralty import DESCRIPCIONES
+        leyenda = "  Código Admiralty (fiabilidad fuente/contenido):\n" + "\n".join(
+            f"    {c} — {DESCRIPCIONES.get(c, 'N/D')}" for c in codigos_usados if c in DESCRIPCIONES
+        )
+        sources_text = leyenda + "\n\n" + "\n".join(source_lines)
+    else:
+        sources_text = "  Sin fuentes registradas."
 
     return REPORT_TEMPLATE.format(
         timestamp=timestamp,

@@ -249,6 +249,12 @@ negativa**.
 
 1. **Cadena de custodia** — cada evidencia lleva su marca de tiempo y un hash
    **SHA-256** del dato, para trazabilidad e integridad.
+1.b. **Código Admiralty de fiabilidad** — cada fuente se clasifica automáticamente
+   (A1, A2, B2, B3, C3…) según su tipo: registros oficiales/DNS/WHOIS = A1, APIs
+   de referencia = A2, recolección OSINT = B2, redes sociales = B3, dark web/pastes
+   = C3. La leyenda se incluye en la sección de fuentes (`core/admiralty.py`).
+   El informe escribe para el decisor (pirámide invertida), es autoconcluible y
+   documenta sin juzgar ("los hechos son compatibles con [hipótesis]…").
 2. **Interpretación por hallazgo** — cada dato va acompañado de su significado:
    ¿qué es?, ¿por qué es relevante?, ¿qué riesgo u oportunidad supone?
 3. **Confianza justificada** — se indica qué factores sostienen o reducen la
