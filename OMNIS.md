@@ -177,15 +177,32 @@ Patrón: `Orquestación → Delegación → Síntesis → Verificación → Entr
 
 ## 6. FORMATO DE SALIDA ESTÁNDAR
 
-Cada investigación produce un informe con las siguientes secciones:
+El informe se genera en **Markdown puro** (texto y tablas planas, sin etiquetas
+HTML), lo que garantiza legibilidad en cualquier visor y una conversión correcta
+a PDF. Cada investigación produce un informe con las siguientes secciones:
 
-- **Resumen Ejecutivo** — hallazgos clave, disciplinas y herramientas usadas
-- **Análisis por Disciplina** — OSINT, SOCMINT, GEOINT, DARKINT, FININT, CTI, SIGINT, otras
+- **Resumen Ejecutivo (narrativo)** — párrafo de contexto + hallazgos clave en viñetas
+- **Tabla de confianza por disciplina** — disciplina, confianza, herramientas, nº hallazgos
+- **Análisis por Disciplina** — OSINT, SOCMINT, GEOINT, DARKINT, FININT, CTI, SIGINT, TECHINT
 - **Correlación Cruzada** — patrones, contradicciones, hipótesis
 - **Recursos y Metodología GIJN** — guías, bases de datos y ángulos periodísticos
 - **Extracción de IOC y Activos** — IPs, dominios, hashes, emails, usuarios, wallets
 - **Recomendaciones** — próximos pasos, acciones, áreas de profundización
 - **Fuentes** — cada hallazgo con fuente y timestamp
+
+### Reglas de calidad del informe
+
+1. **Interpretación por hallazgo** — cada dato va acompañado de su significado:
+   ¿qué es?, ¿por qué es relevante?, ¿qué riesgo u oportunidad supone?, ¿qué
+   hacer a continuación? En modo multi-agente lo genera el Agente Síntesis.
+2. **Confianza justificada** — se indica qué factores sostienen o reducen la
+   confianza y qué haría falta para aumentarla.
+3. **Escaneo de correos obligatorio (dominios)** — al investigar un dominio,
+   O.M.N.I.S ejecuta automáticamente `modules/email_scanner.py`
+   (theHarvester + Hunter.io + Holehe) y presenta una tabla de correos con
+   **fuente**, **fiabilidad** (Alta/Media/Baja) y **rol** (admin, info,
+   contacto, soporte…). Las herramientas ausentes se omiten con elegancia.
+4. **Sin HTML** — solo Markdown y tablas planas.
 
 ---
 
