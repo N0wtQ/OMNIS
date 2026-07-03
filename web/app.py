@@ -75,10 +75,10 @@ def investigar():
 
     def ejecutar():
         try:
-            if modo_agente and os.environ.get("GROQ_API_KEY"):
+            llm_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GROQ_API_KEY")
+            if modo_agente and llm_key:
                 engine = MultiAgentEngine(
                     disciplinas=disciplinas,
-                    api_key=os.environ["GROQ_API_KEY"],
                 )
                 resultado = engine.investigar(
                     objetivo=objetivo,
