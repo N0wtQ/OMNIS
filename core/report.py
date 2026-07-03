@@ -26,6 +26,10 @@ Nivel de confianza : {confidence}
 {cross_correlation}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔹 RECURSOS Y METODOLOGÍA GIJN
+{gijn_section}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔹 EXTRACCIÓN DE IOC Y ACTIVOS
 {ioc_section}
 
@@ -82,6 +86,7 @@ def build_report(
     ioc: IOCBundle,
     cross_correlation: str = "",
     recommendations: str = "",
+    gijn_section: str = "",
 ) -> str:
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     all_findings = [f for flist in findings_by_discipline.values() for f in flist]
@@ -133,6 +138,7 @@ def build_report(
         executive_summary=exec_summary,
         discipline_analysis="\n".join(discipline_blocks),
         cross_correlation=cross_correlation or "  Sin correlaciones cruzadas identificadas.",
+        gijn_section=gijn_section or "  Sin recursos GIJN aplicados.",
         ioc_section=_format_ioc_section(ioc),
         recommendations=recommendations or "  Sin recomendaciones adicionales.",
         sources=sources_text,

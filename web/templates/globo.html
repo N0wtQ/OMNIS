@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>O.M.N.I.S — Globo 3D GEOINT</title>
+  <link href="https://cdn.jsdelivr.net/npm/cesium@1.118/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <style>
+    :root { --accent: #00d4ff; --bg: #0a0f1e; --gold: #ffd700; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #cesium { width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
+    body { font-family: 'Courier New', monospace; }
+    #panel {
+      position: absolute; top: 12px; left: 12px; z-index: 10;
+      background: rgba(10,15,30,0.92); border: 1px solid var(--accent);
+      border-radius: 10px; padding: 14px; width: 300px; max-width: calc(100% - 24px);
+      box-shadow: 0 0 20px rgba(0,212,255,0.25);
+    }
+    #panel h1 { color: var(--accent); font-size: 15px; letter-spacing: 1px; margin-bottom: 4px; }
+    #panel .sub { color: #7a8ba0; font-size: 10px; margin-bottom: 12px; }
+    #buscar {
+      width: 100%; padding: 9px; background: #0d1424; color: #e0e6f0;
+      border: 1px solid #2a3a52; border-radius: 6px; font-family: inherit; font-size: 13px;
+    }
+    #buscar:focus { outline: none; border-color: var(--accent); }
+    .btn {
+      width: 100%; margin-top: 8px; padding: 9px; cursor: pointer;
+      background: var(--accent); color: #05263a; border: none; border-radius: 6px;
+      font-family: inherit; font-weight: bold; font-size: 12px; letter-spacing: 0.5px;
+    }
+    .btn.sec { background: transparent; color: var(--gold); border: 1px solid var(--gold); }
+    .btn:hover { filter: brightness(1.15); }
+    #estado { color: #7a8ba0; font-size: 11px; margin-top: 10px; min-height: 15px; }
+    #volver { position: absolute; bottom: 14px; left: 12px; z-index: 10; color: var(--accent);
+      font-size: 12px; text-decoration: none; background: rgba(10,15,30,0.9);
+      padding: 8px 12px; border-radius: 6px; border: 1px solid #2a3a52; }
+  </style>
+</head>
+<body>
+  <div id="cesium"></div>
+  <div id="panel">
+    <h1>🛰️ GEOINT — GLOBO 3D</h1>
+    <div class="sub">O.M.N.I.S · Vista geoespacial en vivo</div>
+    <input id="buscar" placeholder="Lugar, ciudad, dirección…" autocomplete="off">
+    <button class="btn" onclick="geocodificar()">📍 Localizar</button>
+    <button class="btn sec" onclick="cargarVuelos()">✈️ Vuelos en vivo (ADS-B)</button>
+    <div id="estado"></div>
+  </div>
+  <a id="volver" href="/">← Volver al panel</a>
+
+  <script src="https://cdn.jsdelivr.net/npm/cesium@1.118/Build/Cesium/Cesium.js"></script>
+  <script>
+    // Sin token de Cesium Ion: usamos imágenes de OpenStreetMap (gratis).
+    Cesium.Ion.defaultAccessToken = undefined;
+    const viewer = new Cesium.Viewer("cesium", {
+      baseLayer: Cesium.ImageryLayer.fromProviderAsync(
+        Promise.resolve(new Cesium.OpenStreetMapImageryProvider({
+          url: "https://tile.openstreetmap.org/"
+        }))
+      ),
+      baseLayerPicker: false, geocoder: false, animation: false,
+      timeline: false, navigationHelpButton: false, sceneModePicker: false,
+      homeButton: false, fullscreenButton: false, infoBox: true,
+    });
+    viewer.scene.globe.enableLighting = true;
+
+    // Vista inicial: Europa/España
+    viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(-3.70, 40.41, 6000000),
+      duration: 0,
+    });
+
+    const estado = (t) => document.getElementById("estado").textContent = t;
+
+    async function geocodificar() {
+      const q = document.getElementById("buscar").value.trim();
+      if (!q) return;
+      estado("Geocodificando…");
+      try {
+        const r = await fetch("/api/globo/geocodificar?q=" + encodeURIComponent(q));
+        const data = await r.json();
+        if (!data.resultados || !data.resultados.length) { estado("Sin resultados."); return; }
+        const res = data.resultados;
+        viewer.entities.removeAll();
+        res.forEach((p, i) => {
+          viewer.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(p.lon, p.lat),
+            point: { pixelSize: 12, color: Cesium.Color.RED,
+                     outlineColor: Cesium.Color.WHITE, outlineWidth: 2 },
+            label: { text: p.nombre.split(",")[0], font: "13px monospace",
+                     fillColor: Cesium.Color.YELLOW, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                     outlineWidth: 2, pixelOffset: new Cesium.Cartesian2(0, -18),
+                     showBackground: true, backgroundColor: Cesium.Color.fromCssColorString("#0a0f1e") },
+            description: p.nombre,
+          });
+        });
+        const primero = res[0];
+        viewer.camera.flyTo({
+          destination: Cesium.Cartesian3.fromDegrees(primero.lon, primero.lat, 40000),
+        });
+        estado(res.length + " ubicación(es) marcada(s).");
+      } catch (e) { estado("Error: " + e.message); }
+    }
+
+    async function cargarVuelos() {
+      estado("Cargando vuelos en vivo…");
+      try {
+        const r = await fetch("/api/globo/vuelos");
+        const data = await r.json();
+        if (!data.vuelos || !data.vuelos.length) { estado("Sin datos de vuelos (feed saturado, reintenta)."); return; }
+        viewer.entities.removeAll();
+        data.vuelos.forEach(v => {
+          viewer.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(v.lon, v.lat, (v.alt || 0) + 200),
+            point: { pixelSize: 6, color: Cesium.Color.CYAN },
+            description: `Callsign: ${v.callsign}<br>País: ${v.pais}<br>Altitud: ${Math.round(v.alt)} m`,
+          });
+        });
+        viewer.camera.flyTo({
+          destination: Cesium.Cartesian3.fromDegrees(0, 30, 12000000), duration: 1.5,
+        });
+        estado(data.total + " aeronaves en vivo (OpenSky).");
+      } catch (e) { estado("Error: " + e.message); }
+    }
+
+    document.getElementById("buscar").addEventListener("keydown", e => {
+      if (e.key === "Enter") geocodificar();
+    });
+
+    function pintarCoordenadas(coords, etiquetaObjetivo) {
+      viewer.entities.removeAll();
+      coords.forEach(p => {
+        viewer.entities.add({
+          position: Cesium.Cartesian3.fromDegrees(p.lon, p.lat),
+          point: { pixelSize: 13, color: Cesium.Color.RED,
+                   outlineColor: Cesium.Color.WHITE, outlineWidth: 2 },
+          label: { text: (p.nombre || "").split(",")[0], font: "13px monospace",
+                   fillColor: Cesium.Color.YELLOW, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                   outlineWidth: 2, pixelOffset: new Cesium.Cartesian2(0, -18),
+                   showBackground: true, backgroundColor: Cesium.Color.fromCssColorString("#0a0f1e") },
+          description: p.nombre,
+        });
+      });
+      const primero = coords[0];
+      viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(primero.lon, primero.lat, 40000),
+        duration: 2,
+      });
+      estado(`📍 ${coords.length} coordenada(s) de "${etiquetaObjetivo}" (GEOINT).`);
+    }
+
+    // Carga automática: si la URL trae ?inv=<id>, pinta esa investigación GEOINT.
+    async function cargarInvestigacion() {
+      const params = new URLSearchParams(window.location.search);
+      const inv = params.get("inv");
+      if (!inv) return;
+      estado("Cargando coordenadas de la investigación…");
+      try {
+        const r = await fetch("/api/globo/investigacion/" + encodeURIComponent(inv));
+        const data = await r.json();
+        if (data.coordenadas && data.coordenadas.length) {
+          document.getElementById("buscar").value = data.objetivo || "";
+          pintarCoordenadas(data.coordenadas, data.objetivo || inv);
+        } else {
+          estado("La investigación no tiene coordenadas GEOINT.");
+        }
+      } catch (e) { estado("Error al cargar investigación: " + e.message); }
+    }
+    cargarInvestigacion();
+  </script>
+</body>
+</html>
