@@ -57,6 +57,7 @@ def investigar():
         "informe": None,
         "agentes": [],
         "error": None,
+        "coordenadas": [],
     }
 
     def ejecutar():
@@ -78,6 +79,15 @@ def investigar():
                     target=objetivo,
                 )
             _investigations[inv_id]["informe"] = resultado
+
+            # Si GEOINT está activo, geocodificar el objetivo para el globo 3D
+            if "geoint" in disciplinas:
+                try:
+                    from modules.geoint import geocodificar
+                    _investigations[inv_id]["coordenadas"] = geocodificar(objetivo, limit=5)
+                except Exception:
+                    pass
+
             _investigations[inv_id]["estado"] = "completado"
         except Exception as e:
             _investigations[inv_id]["error"] = str(e)
@@ -181,6 +191,19 @@ def globo_geocodificar():
     except Exception as e:
         return jsonify({"resultados": [], "error": str(e)})
     return jsonify({"resultados": resultados})
+
+
+@app.route("/api/globo/investigacion/<inv_id>")
+def globo_investigacion(inv_id):
+    """Devuelve las coordenadas GEOINT de una investigación para pintarlas en el globo."""
+    inv = _investigations.get(inv_id)
+    if not inv:
+        return jsonify({"error": "Investigación no encontrada.", "coordenadas": []}), 404
+    return jsonify({
+        "objetivo": inv["objetivo"],
+        "estado": inv["estado"],
+        "coordenadas": inv.get("coordenadas", []),
+    })
 
 
 @app.route("/api/globo/vuelos")

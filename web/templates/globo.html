@@ -126,6 +126,47 @@
     document.getElementById("buscar").addEventListener("keydown", e => {
       if (e.key === "Enter") geocodificar();
     });
+
+    function pintarCoordenadas(coords, etiquetaObjetivo) {
+      viewer.entities.removeAll();
+      coords.forEach(p => {
+        viewer.entities.add({
+          position: Cesium.Cartesian3.fromDegrees(p.lon, p.lat),
+          point: { pixelSize: 13, color: Cesium.Color.RED,
+                   outlineColor: Cesium.Color.WHITE, outlineWidth: 2 },
+          label: { text: (p.nombre || "").split(",")[0], font: "13px monospace",
+                   fillColor: Cesium.Color.YELLOW, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                   outlineWidth: 2, pixelOffset: new Cesium.Cartesian2(0, -18),
+                   showBackground: true, backgroundColor: Cesium.Color.fromCssColorString("#0a0f1e") },
+          description: p.nombre,
+        });
+      });
+      const primero = coords[0];
+      viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(primero.lon, primero.lat, 40000),
+        duration: 2,
+      });
+      estado(`📍 ${coords.length} coordenada(s) de "${etiquetaObjetivo}" (GEOINT).`);
+    }
+
+    // Carga automática: si la URL trae ?inv=<id>, pinta esa investigación GEOINT.
+    async function cargarInvestigacion() {
+      const params = new URLSearchParams(window.location.search);
+      const inv = params.get("inv");
+      if (!inv) return;
+      estado("Cargando coordenadas de la investigación…");
+      try {
+        const r = await fetch("/api/globo/investigacion/" + encodeURIComponent(inv));
+        const data = await r.json();
+        if (data.coordenadas && data.coordenadas.length) {
+          document.getElementById("buscar").value = data.objetivo || "";
+          pintarCoordenadas(data.coordenadas, data.objetivo || inv);
+        } else {
+          estado("La investigación no tiene coordenadas GEOINT.");
+        }
+      } catch (e) { estado("Error al cargar investigación: " + e.message); }
+    }
+    cargarInvestigacion();
   </script>
 </body>
 </html>

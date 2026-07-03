@@ -156,10 +156,13 @@
             El informe aparecerá aquí al completar la investigación.
           </div>
           <pre id="informe-contenido" class="hidden text-xs text-gray-300 leading-relaxed font-mono"></pre>
-          <div id="btn-descargar-wrapper" class="hidden mt-4">
+          <div id="btn-descargar-wrapper" class="hidden mt-4 flex flex-wrap gap-3">
             <button onclick="descargarInforme()" class="btn-gold px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase transition">
               ↓ Descargar informe .txt
             </button>
+            <a id="btn-globo" href="#" class="hidden btn-primary px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase transition">
+              🛰️ Ver en globo 3D
+            </a>
           </div>
         </div>
 
@@ -184,6 +187,7 @@
   let disciplinasActivas = new Set();
   let informeActual = '';
   let evtSource = null;
+  let invActual = null;
 
   async function cargarDisciplinas() {
     const resp = await fetch('/api/disciplinas');
@@ -248,6 +252,7 @@
     const { id, error } = await resp.json();
     if (error) { mostrarError(error); btn.disabled = false; btn.textContent = '▶ Iniciar investigación'; return; }
 
+    invActual = id;
     escucharStream(id);
 
     btn.disabled = false;
@@ -265,6 +270,7 @@
         evtSource.close();
         mostrarInforme(data.informe);
         setEstado('✅ Investigación completada', false);
+        actualizarBotonGlobo();
         cargarHistorial();
       } else if (data.tipo === 'error') {
         evtSource.close();
@@ -304,6 +310,21 @@
     document.getElementById('btn-descargar-wrapper').classList.remove('hidden');
   }
 
+  async function actualizarBotonGlobo() {
+    const btnGlobo = document.getElementById('btn-globo');
+    btnGlobo.classList.add('hidden');
+    if (!invActual || !disciplinasActivas.has('geoint')) return;
+    try {
+      const r = await fetch(`/api/globo/investigacion/${invActual}`);
+      const data = await r.json();
+      if (data.coordenadas && data.coordenadas.length) {
+        btnGlobo.href = `/globo?inv=${invActual}`;
+        btnGlobo.textContent = `🛰️ Ver ${data.coordenadas.length} ubicación(es) en globo 3D`;
+        btnGlobo.classList.remove('hidden');
+      }
+    } catch (e) { /* silencioso */ }
+  }
+
   function mostrarError(msg) {
     document.getElementById('informe-placeholder').textContent = `Error: ${msg}`;
     document.getElementById('informe-placeholder').classList.remove('hidden');
@@ -317,6 +338,7 @@
     document.getElementById('informe-placeholder').classList.remove('hidden', 'text-red-400');
     document.getElementById('informe-placeholder').textContent = 'El informe aparecerá aquí al completar la investigación.';
     document.getElementById('btn-descargar-wrapper').classList.add('hidden');
+    document.getElementById('btn-globo').classList.add('hidden');
     setEstado('Iniciando investigación...', true);
   }
 

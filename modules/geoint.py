@@ -14,27 +14,44 @@ _TS = lambda: datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 _HEADERS = {"User-Agent": "OMNIS-Intelligence/1.0 (research)"}
 
 
-def _openstreetmap_nominatim(target: str) -> List[Finding]:
-    findings = []
+def geocodificar(target: str, limit: int = 3) -> List[dict]:
+    """Geocodifica un objetivo y devuelve coordenadas estructuradas.
+
+    Reutilizable por el módulo GEOINT y por el globo 3D de la interfaz web.
+    """
     try:
         resp = requests.get(
             "https://nominatim.openstreetmap.org/search",
-            params={"q": target, "format": "json", "limit": 3},
+            params={"q": target, "format": "json", "limit": limit},
             headers=_HEADERS,
             timeout=10,
         )
         data = resp.json()
-        if data:
-            locs = [f"{d.get('display_name')} (lat={d.get('lat')}, lon={d.get('lon')})" for d in data[:3]]
-            findings.append(Finding(
-                discipline="geoint",
-                description=f"OSM Nominatim geocoding for '{target}': {'; '.join(locs)}",
-                sources=[f"OpenStreetMap Nominatim [{_TS()}]"],
-                tools_used=["Nominatim / OSM"],
-                timestamp=_TS(),
-            ))
+        return [
+            {
+                "nombre": d.get("display_name"),
+                "lat": float(d["lat"]),
+                "lon": float(d["lon"]),
+            }
+            for d in data
+        ]
     except Exception:
-        pass
+        return []
+
+
+def _openstreetmap_nominatim(target: str) -> List[Finding]:
+    findings = []
+    coords = geocodificar(target, limit=3)
+    if coords:
+        locs = [f"{c['nombre']} (lat={c['lat']}, lon={c['lon']})" for c in coords]
+        findings.append(Finding(
+            discipline="geoint",
+            description=f"OSM Nominatim geocoding for '{target}': {'; '.join(locs)}",
+            sources=[f"OpenStreetMap Nominatim [{_TS()}]"],
+            tools_used=["Nominatim / OSM"],
+            timestamp=_TS(),
+            raw_data={"coordenadas": coords},
+        ))
     return findings
 
 
