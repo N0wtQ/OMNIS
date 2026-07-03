@@ -87,15 +87,22 @@ DISCIPLINE_PERSONAS = {
 }
 
 SYNTHESIS_PERSONA = (
-    "Eres el Agente Síntesis de O.M.N.I.S — Operational Multi-Node Intelligence System. "
-    "Tu misión es fusionar los hallazgos de todos los agentes disciplinares en un único "
-    "informe de inteligencia estructurado, identificar correlaciones cruzadas, "
-    "contradicciones y generar recomendaciones accionables. "
-    "Responde siempre en español. Sé preciso, conciso y objetivo."
+    "Eres el Agente Síntesis de O.M.N.I.S, un analista de inteligencia profesional que "
+    "redacta según los estándares de agencias (NSA/CNI/FBI) y del método OSINT investigativo. "
+    "Reglas de redacción OBLIGATORIAS:\n"
+    "1. SEPARA hecho de inferencia: primero el dato objetivo, después su interpretación.\n"
+    "2. LENGUAJE NARRATIVO DE CONFIANZA (no uses solo Alto/Medio/Bajo): "
+    "'Las evidencias establecen con elevada confianza que…', 'Los datos sugieren que…', "
+    "'Los datos son compatibles con varios escenarios, resultando en confianza baja…'.\n"
+    "3. HIPÓTESIS EN COMPETENCIA: plantea 2-3 hipótesis y evalúa cuál soporta mejor la "
+    "convergencia de evidencias independientes.\n"
+    "4. EVIDENCIA NEGATIVA: declara qué búsquedas no dieron resultados y qué límite imponen.\n"
+    "5. Markdown puro, sin HTML. Responde en español, tono sobrio y defendible."
 )
 
 
-def _llamar_llm(client, model: str, sistema: str, usuario: str, json_mode: bool = False) -> str:
+def _llamar_llm(client, model: str, sistema: str, usuario: str,
+                json_mode: bool = False, max_tokens: int = 1024) -> str:
     """Capa de abstracción para Gemini y Groq/OpenAI."""
     if hasattr(client, "generate_content"):
         # Cliente Gemini
@@ -112,7 +119,7 @@ def _llamar_llm(client, model: str, sistema: str, usuario: str, json_mode: bool 
                 {"role": "user", "content": usuario},
             ],
             temperature=0.3,
-            max_tokens=1024,
+            max_tokens=max_tokens,
         )
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
@@ -139,22 +146,24 @@ class AgenteDisiplinar:
 
         ctx_bloque = ("CONTEXTO DE AGENTES ANTERIORES:\n" + contexto_previo) if contexto_previo else ""
         formato_json = (
-            '{"hallazgos": ["Dato concreto — Interpretación: qué significa, por qué es '
-            'relevante y qué riesgo u oportunidad supone."], '
+            '{"hallazgos": ["DATO OBSERVADO: <hecho objetivo>. INTERPRETACIÓN: <qué implica y '
+            'por qué, separando hecho de inferencia>."], '
             '"ioc": {"ips": [], "dominios": [], "emails": [], "hashes": [], "wallets": []}, '
-            '"hipotesis": "hipotesis principal", '
+            '"hipotesis": [{"enunciado": "hipótesis que explica los datos", '
+            '"confianza": "Muy Alta|Alta|Media|Baja", '
+            '"fundamento": "por qué, según la convergencia de evidencias"}], '
+            '"evidencia_negativa": ["búsqueda que no dio resultados y el límite que impone"], '
             '"confianza": "Alto|Medio|Bajo", '
-            '"justificacion_confianza": "Qué factores sostienen o reducen la confianza y '
-            'qué haría falta para aumentarla.", '
             '"herramientas": ["herramienta1"]}'
         )
         usuario = (
             f"OBJETIVO DE INVESTIGACIÓN: {objetivo}\n"
             f"CONSULTA: {consulta}\n"
             f"{ctx_bloque}\n\n"
-            f"Analiza el objetivo desde tu disciplina ({self.disciplina.upper()}). "
-            f"CADA hallazgo debe incluir el dato Y su interpretación (qué significa, por qué "
-            f"importa, qué hacer a continuación). Justifica el nivel de confianza. "
+            f"Analiza el objetivo desde tu disciplina ({self.disciplina.upper()}) como un "
+            f"analista profesional. Para CADA hallazgo separa el DATO OBSERVADO (hecho) de la "
+            f"INTERPRETACIÓN (inferencia). Plantea hipótesis en competencia con confianza "
+            f"narrativa y declara la evidencia negativa (búsquedas sin resultado). "
             f"Responde ÚNICAMENTE con JSON válido con este formato exacto:\n{formato_json}"
         )
 
@@ -197,10 +206,20 @@ class AgenteSintesis:
         if progreso_cb:
             progreso_cb("🧠 Agente Síntesis fusionando hallazgos de todos los agentes...")
 
+        def _fmt_hip(res):
+            hip = res.get("hipotesis", [])
+            if isinstance(hip, list):
+                return " | ".join(
+                    f"{h.get('enunciado','')} ({h.get('confianza','')})"
+                    if isinstance(h, dict) else str(h) for h in hip
+                ) or "N/A"
+            return str(hip) or "N/A"
+
         resumen_agentes = "\n\n".join(
             f"=== {disc.upper()} ===\n"
-            f"Hallazgos: {', '.join(res.get('hallazgos', []))}\n"
-            f"Hipótesis: {res.get('hipotesis', 'N/A')}\n"
+            f"Datos e interpretación: {' || '.join(res.get('hallazgos', []))}\n"
+            f"Hipótesis: {_fmt_hip(res)}\n"
+            f"Evidencia negativa: {'; '.join(res.get('evidencia_negativa', [])) or 'no declarada'}\n"
             f"Confianza: {res.get('confianza', 'N/A')}\n"
             f"Herramientas: {', '.join(res.get('herramientas', []))}"
             for disc, res in resultados_por_disciplina.items()
@@ -208,20 +227,33 @@ class AgenteSintesis:
 
         usuario = (
             f"OBJETIVO: {objetivo}\nCONSULTA: {consulta}\n\n"
-            f"HALLAZGOS DE TODOS LOS AGENTES:\n{resumen_agentes}\n\n"
-            f"Genera un análisis narrativo en español, en Markdown puro (sin etiquetas "
-            f"HTML), con:\n"
-            f"1. Resumen ejecutivo narrativo (5-7 líneas) con valoración global\n"
-            f"2. Correlación cruzada entre disciplinas (patrones y contradicciones)\n"
-            f"3. Nivel de confianza general (Alto/Medio/Bajo) JUSTIFICADO: qué factores lo "
-            f"sostienen o reducen y qué haría falta para aumentarlo\n"
-            f"4. Top 5 hallazgos más relevantes, cada uno con su interpretación (qué "
-            f"significa y qué implica)\n"
-            f"5. Recomendaciones accionables de próximos pasos (con enfoque periodístico GIJN)"
+            f"MATERIAL DE LOS AGENTES:\n{resumen_agentes}\n\n"
+            f"Redacta un INFORME DE INTELIGENCIA PROFESIONAL en español, Markdown puro (sin "
+            f"HTML), con esta estructura de 7 secciones EXACTA:\n\n"
+            f"## 1. Encabezado y datos del mandato\n"
+            f"(objetivo, pregunta clave de inteligencia, fecha, disciplinas ejecutadas)\n\n"
+            f"## 2. Resumen ejecutivo\n"
+            f"(respuesta sintética a la pregunta clave, hallazgos principales, hipótesis "
+            f"dominante y confianza global en lenguaje narrativo — máx. una página)\n\n"
+            f"## 3. Metodología\n"
+            f"(herramientas y fuentes consultadas, alcance y limitaciones del método)\n\n"
+            f"## 4. Evidencias recopiladas\n"
+            f"(lista de datos objetivos observados, agrupados por disciplina)\n\n"
+            f"## 5. Análisis\n"
+            f"(por disciplina: **Datos observados** → **Interpretación** [separa hecho de "
+            f"inferencia] → **Hipótesis en competencia** evaluadas por convergencia de "
+            f"evidencias, con confianza narrativa)\n\n"
+            f"## 6. Límites y recomendaciones\n"
+            f"(evidencia negativa y lo que NO se pudo verificar; próximos pasos accionables "
+            f"con enfoque periodístico GIJN)\n\n"
+            f"## 7. Apéndices\n"
+            f"(fuentes/URLs consultadas y nota de cadena de custodia)\n\n"
+            f"Usa SIEMPRE lenguaje narrativo de confianza, nunca 'Alto/Medio/Bajo' a secas."
         )
 
         try:
-            sintesis = _llamar_llm(self.client, self.model, SYNTHESIS_PERSONA, usuario, json_mode=False)
+            sintesis = _llamar_llm(self.client, self.model, SYNTHESIS_PERSONA, usuario,
+                                   json_mode=False, max_tokens=4096)
         except Exception as e:
             sintesis = f"Error en síntesis: {e}"
 
