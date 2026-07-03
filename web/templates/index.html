@@ -2,8 +2,16 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>O.M.N.I.S — Operational Multi-Node Intelligence System</title>
+  <!-- PWA: instalable en móvil, tablet y escritorio -->
+  <link rel="manifest" href="/static/manifest.json" />
+  <meta name="theme-color" content="#0a0f1e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OMNIS" />
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -44,15 +52,15 @@
 <body class="text-gray-300 min-h-screen">
 
   <!-- HEADER -->
-  <header class="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+  <header class="border-b border-gray-800 px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
     <div>
-      <h1 class="text-xl font-bold text-white glow tracking-widest">O.M.N.I.S</h1>
-      <p class="text-xs text-gray-500 tracking-wider">Operational Multi-Node Intelligence System</p>
+      <h1 class="text-lg sm:text-xl font-bold text-white glow tracking-widest">O.M.N.I.S</h1>
+      <p class="text-[10px] sm:text-xs text-gray-500 tracking-wider">Operational Multi-Node Intelligence System</p>
     </div>
-    <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-center gap-2 sm:gap-3">
       <a href="/globo" class="text-xs px-3 py-1 rounded border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-gray-900 transition">🛰️ Globo 3D</a>
       <span id="modo-badge" class="text-xs px-2 py-1 rounded border border-gray-700 text-gray-500">Modo: Clásico</span>
-      <span class="text-xs text-gray-600">v2.0 · Motor Multi-Agente</span>
+      <span class="hidden sm:inline text-xs text-gray-600">v2.0 · Motor Multi-Agente</span>
     </div>
   </header>
 
@@ -157,8 +165,11 @@
           </div>
           <pre id="informe-contenido" class="hidden text-xs text-gray-300 leading-relaxed font-mono"></pre>
           <div id="btn-descargar-wrapper" class="hidden mt-4 flex flex-wrap gap-3">
-            <button onclick="descargarInforme()" class="btn-gold px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase transition">
-              ↓ Descargar informe .txt
+            <button onclick="descargarPDF()" class="btn-gold px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase transition">
+              📄 Descargar PDF
+            </button>
+            <button onclick="descargarInforme()" class="btn-primary px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase transition">
+              ↓ Descargar .txt
             </button>
             <a id="btn-globo" href="#" class="hidden btn-primary px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase transition">
               🛰️ Ver en globo 3D
@@ -382,6 +393,12 @@
     URL.revokeObjectURL(url);
   }
 
+  function descargarPDF() {
+    if (!invActual) return;
+    // Abre el endpoint que genera el PDF al vuelo y fuerza la descarga.
+    window.location.href = `/api/pdf/${invActual}`;
+  }
+
   cargarDisciplinas();
 
   // Comprobar si MiroFish está activo
@@ -407,6 +424,13 @@
 
   comprobarMiroFish();
   setInterval(comprobarMiroFish, 15000);
+
+  // Registro del Service Worker (PWA) — permite instalar OMNIS como app.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch(() => {});
+    });
+  }
 </script>
 </body>
 </html>

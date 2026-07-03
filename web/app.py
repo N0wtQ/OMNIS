@@ -30,6 +30,17 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/service-worker.js")
+def service_worker():
+    """Sirve el service worker desde la raíz para que su ámbito sea todo el sitio."""
+    from flask import send_from_directory
+    resp = send_from_directory(app.static_folder, "service-worker.js")
+    resp.headers["Content-Type"] = "application/javascript"
+    resp.headers["Service-Worker-Allowed"] = "/"
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 @app.route("/api/disciplinas")
 def disciplinas():
     return jsonify(list(DISCIPLINE_MODULES.keys()))
@@ -58,6 +69,8 @@ def investigar():
         "agentes": [],
         "error": None,
         "coordenadas": [],
+        "datos": None,
+        "mapa_png": None,
     }
 
     def ejecutar():
@@ -72,12 +85,14 @@ def investigar():
                     consulta=_investigations[inv_id]["consulta"],
                     progreso_cb=lambda msg: _investigations[inv_id]["agentes"].append(msg),
                 )
+                _investigations[inv_id]["datos"] = engine.ultimos_datos
             else:
                 orquestador = Orchestrator(disciplines=disciplinas)
-                resultado = orquestador.investigate(
+                resultado, datos = orquestador.investigar_con_datos(
                     query=_investigations[inv_id]["consulta"],
                     target=objetivo,
                 )
+                _investigations[inv_id]["datos"] = datos
             _investigations[inv_id]["informe"] = resultado
 
             # Si GEOINT está activo, geocodificar el objetivo para el globo 3D
@@ -232,6 +247,46 @@ def globo_vuelos():
         return jsonify({"vuelos": vuelos, "total": len(vuelos)})
     except Exception as e:
         return jsonify({"vuelos": [], "total": 0, "error": str(e)})
+
+
+@app.route("/api/pdf/<inv_id>")
+def descargar_pdf(inv_id):
+    """Genera y descarga el informe en PDF profesional."""
+    inv = _investigations.get(inv_id)
+    if not inv:
+        return jsonify({"error": "Investigación no encontrada."}), 404
+    if inv["estado"] != "completado" or not inv.get("datos"):
+        return jsonify({"error": "La investigación aún no está completada."}), 409
+    try:
+        from core.pdf_report import construir_pdf
+        pdf_bytes = construir_pdf(inv["datos"], mapa_png=inv.get("mapa_png"))
+    except Exception as e:
+        return jsonify({"error": f"No se pudo generar el PDF: {e}"}), 500
+
+    nombre = f"OMNIS_{inv['objetivo'][:30].replace(' ', '_')}.pdf"
+    return Response(
+        pdf_bytes,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{nombre}"'},
+    )
+
+
+@app.route("/api/globo/captura/<inv_id>", methods=["POST"])
+def globo_captura(inv_id):
+    """Recibe una captura PNG del globo 3D (dataURL) para incluirla en el PDF."""
+    import base64
+    inv = _investigations.get(inv_id)
+    if not inv:
+        return jsonify({"error": "Investigación no encontrada."}), 404
+    data = request.get_json(force=True)
+    data_url = data.get("imagen", "")
+    if "," in data_url:
+        data_url = data_url.split(",", 1)[1]
+    try:
+        inv["mapa_png"] = base64.b64decode(data_url)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    return jsonify({"ok": True})
 
 
 @app.route("/api/mirofish/status")

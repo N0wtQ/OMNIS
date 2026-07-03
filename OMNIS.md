@@ -120,6 +120,47 @@ La interfaz web incluye un **globo terráqueo 3D (CesiumJS)** accesible en `/glo
 
 ---
 
+## 4.d. INFORMES EN PDF PROFESIONALES
+
+Cada investigación puede exportarse a un **PDF profesional** desde el botón
+"📄 Descargar PDF" del panel. El PDF (`core/pdf_report.py`, basado en
+**reportlab** — Python puro, sin librerías de sistema) incluye:
+
+- **Portada** con objetivo, consulta, fecha y nivel de confianza
+- **Gráfico de barras** de confianza por disciplina
+- **Tablas por disciplina** con hallazgos y herramientas
+- **Tabla de IOC** (IPs, dominios, hashes, wallets…)
+- Secciones de **correlación cruzada**, **GIJN** y **recomendaciones**
+- **Mapa geoespacial** incrustado si se captura desde el globo 3D
+  (botón "Guardar este mapa en el PDF" en `/globo`)
+
+Endpoints: `GET /api/pdf/<id>` (descarga) y `POST /api/globo/captura/<id>`
+(captura del mapa). Se elige reportlab en lugar de WeasyPrint precisamente para
+no requerir dependencias de sistema y mantener la instalación accesible.
+
+---
+
+## 4.e. MULTIPLATAFORMA (PWA — funciona en todos los dispositivos)
+
+O.M.N.I.S es una **Progressive Web App (PWA)**: se ejecuta en cualquier
+navegador moderno y se puede **instalar como aplicación** en móvil (Android/iOS),
+tablet, y escritorio (Windows/Linux/macOS) directamente desde el navegador, sin
+tiendas de aplicaciones ni compilaciones nativas.
+
+- `web/static/manifest.json` — metadatos de instalación (nombre, iconos, colores)
+- `web/static/service-worker.js` — carga rápida y shell offline; la API nunca se
+  cachea para no servir inteligencia obsoleta
+- Interfaz **responsive** (Tailwind) adaptada a táctil y ratón
+
+Para "instalar": en Chrome/Edge aparece el icono de instalar en la barra de
+direcciones; en Android, "Añadir a pantalla de inicio"; en iOS Safari,
+Compartir → "Añadir a pantalla de inicio".
+
+> Se elige PWA en lugar de Electron/Capacitor porque cubre todos los dispositivos
+> con una sola base de código ligera, coherente con el objetivo de accesibilidad.
+
+---
+
 ## 5. ORQUESTACIÓN MULTI-AGENTE
 
 Para consultas complejas, OMNIS actúa como orquestador:

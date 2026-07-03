@@ -44,6 +44,7 @@
     <input id="buscar" placeholder="Lugar, ciudad, dirección…" autocomplete="off">
     <button class="btn" onclick="geocodificar()">📍 Localizar</button>
     <button class="btn sec" onclick="cargarVuelos()">✈️ Vuelos en vivo (ADS-B)</button>
+    <button id="btn-capturar" class="btn hidden" style="display:none" onclick="capturarMapa()">📄 Guardar este mapa en el PDF</button>
     <div id="estado"></div>
   </div>
   <a id="volver" href="/">← Volver al panel</a>
@@ -61,6 +62,8 @@
       baseLayerPicker: false, geocoder: false, animation: false,
       timeline: false, navigationHelpButton: false, sceneModePicker: false,
       homeButton: false, fullscreenButton: false, infoBox: true,
+      // Necesario para poder capturar el lienzo como imagen (para el PDF)
+      contextOptions: { webgl: { preserveDrawingBuffer: true } },
     });
     viewer.scene.globe.enableLighting = true;
 
@@ -149,11 +152,34 @@
       estado(`📍 ${coords.length} coordenada(s) de "${etiquetaObjetivo}" (GEOINT).`);
     }
 
+    let invId = null;
+
+    async function capturarMapa() {
+      if (!invId) return;
+      estado("Guardando mapa en el PDF…");
+      try {
+        viewer.render();  // asegurar el fotograma actual en el buffer
+        const dataUrl = viewer.scene.canvas.toDataURL("image/png");
+        const r = await fetch(`/api/globo/captura/${invId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imagen: dataUrl }),
+        });
+        const d = await r.json();
+        estado(d.ok ? "✅ Mapa añadido. Ya puedes descargar el PDF en el panel."
+                    : "Error al guardar el mapa.");
+      } catch (e) { estado("Error: " + e.message); }
+    }
+
     // Carga automática: si la URL trae ?inv=<id>, pinta esa investigación GEOINT.
     async function cargarInvestigacion() {
       const params = new URLSearchParams(window.location.search);
       const inv = params.get("inv");
       if (!inv) return;
+      invId = inv;
+      const btn = document.getElementById("btn-capturar");
+      btn.classList.remove("hidden");
+      btn.style.display = "block";
       estado("Cargando coordenadas de la investigación…");
       try {
         const r = await fetch("/api/globo/investigacion/" + encodeURIComponent(inv));

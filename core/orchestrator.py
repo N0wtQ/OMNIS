@@ -108,7 +108,8 @@ class Orchestrator:
         recs.append("  • Documentar y preservar evidencias para posible escalado legal")
         return "\n".join(recs)
 
-    def investigate(self, query: str, target: str) -> str:
+    def _investigar(self, query: str, target: str):
+        """Ejecuta la investigación y devuelve (texto_informe, datos_estructurados)."""
         ctx = InvestigationContext(query=query, target=target)
 
         # FASE 1 & 2: ACQUIRE + ENRICH — run each discipline module
@@ -132,7 +133,7 @@ class Orchestrator:
             gijn_section = ""
 
         # FASE 4: DELIVER — build report
-        return build_report(
+        texto = build_report(
             query=ctx.query,
             findings_by_discipline=ctx.findings_by_discipline,
             ioc=ctx.ioc,
@@ -140,3 +141,23 @@ class Orchestrator:
             recommendations=ctx.recommendations,
             gijn_section=gijn_section,
         )
+
+        from core.report_data import construir_datos
+        datos = construir_datos(
+            objetivo=target,
+            consulta=query,
+            findings_by_discipline=ctx.findings_by_discipline,
+            ioc=ctx.ioc,
+            correlacion=ctx.cross_correlation,
+            recomendaciones=ctx.recommendations,
+            gijn=gijn_section,
+        )
+        return texto, datos
+
+    def investigate(self, query: str, target: str) -> str:
+        texto, _ = self._investigar(query, target)
+        return texto
+
+    def investigar_con_datos(self, query: str, target: str):
+        """Devuelve (texto_informe, datos_estructurados) para exportar a PDF."""
+        return self._investigar(query, target)

@@ -233,22 +233,12 @@ class MultiAgentEngine:
         base_url: str = GROQ_BASE_URL,
     ):
         self.disciplinas = disciplinas or list(DISCIPLINE_PERSONAS.keys())
-
-        gemini_key = os.environ.get("GEMINI_API_KEY", "")
-        groq_key = api_key or os.environ.get("GROQ_API_KEY", "")
-
-        if gemini_key and _GEMINI_AVAILABLE:
-            genai.configure(api_key=gemini_key)
-            self.model = model or DEFAULT_MODEL_GEMINI
-            self.client = genai.GenerativeModel(self.model)
-        elif groq_key and _OPENAI_AVAILABLE:
-            self.model = model or DEFAULT_MODEL_GROQ
-            self.client = OpenAI(api_key=groq_key, base_url=GROQ_BASE_URL)
-        else:
-            raise ImportError(
-                "Configura GEMINI_API_KEY (pip install google-generativeai) "
-                "o GROQ_API_KEY (pip install openai)"
-            )
+        self.model = model
+        self.ultimos_datos = None
+        self.client = OpenAI(
+            api_key=api_key or os.environ.get("GROQ_API_KEY", ""),
+            base_url=base_url,
+        )
 
     def investigar(
         self,
@@ -325,14 +315,33 @@ class MultiAgentEngine:
         except Exception:
             gijn_section = ""
 
-        return build_report(
+        recomendaciones = (
+            "  Generado por el motor multi-agente O.M.N.I.S.\n"
+            "  Revisa la sección de correlación cruzada para recomendaciones detalladas."
+        )
+
+        texto = build_report(
             query=consulta,
             findings_by_discipline=findings_by_discipline,
             ioc=ioc_global,
             cross_correlation=sintesis,
-            recommendations=(
-                "  Generado por el motor multi-agente O.M.N.I.S.\n"
-                "  Revisa la sección de correlación cruzada para recomendaciones detalladas."
-            ),
+            recommendations=recomendaciones,
             gijn_section=gijn_section,
         )
+
+        # Datos estructurados para exportación a PDF
+        try:
+            from core.report_data import construir_datos
+            self.ultimos_datos = construir_datos(
+                objetivo=objetivo,
+                consulta=consulta,
+                findings_by_discipline=findings_by_discipline,
+                ioc=ioc_global,
+                correlacion=sintesis,
+                recomendaciones=recomendaciones,
+                gijn=gijn_section,
+            )
+        except Exception:
+            self.ultimos_datos = None
+
+        return texto
