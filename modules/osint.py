@@ -83,9 +83,30 @@ def _whois_lookup(target: str) -> List[Finding]:
     return findings
 
 
+import re as _re
+
+_DOMINIO_RE = _re.compile(r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63})+$")
+_IP_RE = _re.compile(r"^\d{1,3}(\.\d{1,3}){3}$")
+
+
+def _es_dominio(target: str) -> bool:
+    """True si el objetivo parece un dominio (no una IP, usuario o empresa)."""
+    t = target.strip().lower()
+    if _IP_RE.match(t) or "@" in t or " " in t:
+        return False
+    return bool(_DOMINIO_RE.match(t))
+
+
 def run(target: str, query: str) -> List[Finding]:
     findings: List[Finding] = []
     findings += _passive_dns(target)
     findings += _whois_lookup(target)
     findings += _run_theharvester(target)
+    # Escaneo de correos obligatorio al investigar un dominio
+    if _es_dominio(target):
+        try:
+            from modules.email_scanner import run_como_findings
+            findings += run_como_findings(target)
+        except Exception:
+            pass
     return findings

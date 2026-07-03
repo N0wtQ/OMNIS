@@ -39,6 +39,12 @@ if ! command -v maigret &>/dev/null; then
   pip install maigret --quiet
 fi
 
+# Holehe — verifica en qué servicios está registrado un correo (escaneo de correos)
+if ! command -v holehe &>/dev/null; then
+  echo "[*] Installing Holehe..."
+  pip install holehe --quiet || true
+fi
+
 # osint-mcp-server
 if [ ! -d "$TOOLS_DIR/osint-mcp-server" ]; then
   echo "[*] Cloning osint-mcp-server..."

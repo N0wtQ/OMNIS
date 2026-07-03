@@ -135,10 +135,13 @@ class AgenteDisiplinar:
 
         ctx_bloque = ("CONTEXTO DE AGENTES ANTERIORES:\n" + contexto_previo) if contexto_previo else ""
         formato_json = (
-            '{"hallazgos": ["hallazgo 1", "hallazgo 2"], '
+            '{"hallazgos": ["Dato concreto — Interpretación: qué significa, por qué es '
+            'relevante y qué riesgo u oportunidad supone."], '
             '"ioc": {"ips": [], "dominios": [], "emails": [], "hashes": [], "wallets": []}, '
             '"hipotesis": "hipotesis principal", '
             '"confianza": "Alto|Medio|Bajo", '
+            '"justificacion_confianza": "Qué factores sostienen o reducen la confianza y '
+            'qué haría falta para aumentarla.", '
             '"herramientas": ["herramienta1"]}'
         )
         usuario = (
@@ -146,6 +149,8 @@ class AgenteDisiplinar:
             f"CONSULTA: {consulta}\n"
             f"{ctx_bloque}\n\n"
             f"Analiza el objetivo desde tu disciplina ({self.disciplina.upper()}). "
+            f"CADA hallazgo debe incluir el dato Y su interpretación (qué significa, por qué "
+            f"importa, qué hacer a continuación). Justifica el nivel de confianza. "
             f"Responde ÚNICAMENTE con JSON válido con este formato exacto:\n{formato_json}"
         )
 
@@ -200,12 +205,15 @@ class AgenteSintesis:
         usuario = (
             f"OBJETIVO: {objetivo}\nCONSULTA: {consulta}\n\n"
             f"HALLAZGOS DE TODOS LOS AGENTES:\n{resumen_agentes}\n\n"
-            f"Genera:\n"
-            f"1. Correlación cruzada entre disciplinas (patrones, contradicciones)\n"
-            f"2. Nivel de confianza general (Alto/Medio/Bajo) con justificación\n"
-            f"3. Top 5 hallazgos más relevantes\n"
-            f"4. Recomendaciones de próximos pasos\n"
-            f"Responde en español, formato de texto estructurado."
+            f"Genera un análisis narrativo en español, en Markdown puro (sin etiquetas "
+            f"HTML), con:\n"
+            f"1. Resumen ejecutivo narrativo (5-7 líneas) con valoración global\n"
+            f"2. Correlación cruzada entre disciplinas (patrones y contradicciones)\n"
+            f"3. Nivel de confianza general (Alto/Medio/Bajo) JUSTIFICADO: qué factores lo "
+            f"sostienen o reducen y qué haría falta para aumentarlo\n"
+            f"4. Top 5 hallazgos más relevantes, cada uno con su interpretación (qué "
+            f"significa y qué implica)\n"
+            f"5. Recomendaciones accionables de próximos pasos (con enfoque periodístico GIJN)"
         )
 
         try:
