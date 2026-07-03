@@ -124,11 +124,16 @@ def build_report(
                     block += "    Fuentes: " + ", ".join(f.sources) + "\n"
         discipline_blocks.append(block)
 
-    # Sources
+    # Sources — con cadena de custodia (hash SHA-256 del dato)
+    import hashlib
     source_lines = []
     for f in all_findings:
+        sha = hashlib.sha256(f.description.encode("utf-8")).hexdigest()
         for src in f.sources:
-            source_lines.append(f"  • [{f.timestamp or timestamp}] {src} — {f.description[:60]}")
+            source_lines.append(
+                f"  • [{f.timestamp or timestamp}] {src} — {f.description[:60]} "
+                f"(SHA-256: {sha[:16]}…)"
+            )
     sources_text = "\n".join(source_lines) if source_lines else "  Sin fuentes registradas."
 
     return REPORT_TEMPLATE.format(

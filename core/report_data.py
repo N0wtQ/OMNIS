@@ -5,6 +5,7 @@ clásico y el motor multi-agente. Alimenta tanto el generador de PDF
 """
 from __future__ import annotations
 
+import hashlib
 from datetime import datetime, timezone
 from typing import Dict, List
 
@@ -37,10 +38,15 @@ def construir_datos(
             "herramientas": list(dict.fromkeys(t for f in findings for t in f.tools_used)),
         })
 
+    # Cadena de custodia: hash SHA-256 del dato objetivo de cada evidencia
     fuentes = []
     for f in all_findings:
+        sha = hashlib.sha256(f.description.encode("utf-8")).hexdigest()
         for src in f.sources:
-            fuentes.append(f"[{f.timestamp or timestamp}] {src} — {f.description[:70]}")
+            fuentes.append(
+                f"[{f.timestamp or timestamp}] {src} — {f.description[:70]} "
+                f"(SHA-256: {sha[:16]}…)"
+            )
 
     return {
         "objetivo": objetivo,

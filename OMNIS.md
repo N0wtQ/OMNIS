@@ -210,12 +210,33 @@ a PDF. Cada investigación produce un informe con las siguientes secciones:
 - **Recomendaciones** — próximos pasos, acciones, áreas de profundización
 - **Fuentes** — cada hallazgo con fuente y timestamp
 
+### Estándar de informe profesional (modo multi-agente)
+
+En modo multi-agente, el Agente Síntesis redacta como un analista de inteligencia
+profesional, con una **estructura de 7 secciones**:
+
+1. Encabezado y datos del mandato (objetivo, pregunta clave, fecha)
+2. Resumen ejecutivo (respuesta sintética + confianza global)
+3. Metodología (herramientas y fuentes, alcance)
+4. Evidencias recopiladas (datos objetivos por disciplina)
+5. Análisis — por disciplina: **Datos observados** → **Interpretación**
+   (separando hecho de inferencia) → **Hipótesis en competencia** evaluadas por
+   convergencia de evidencias
+6. Límites y recomendaciones (evidencia negativa + próximos pasos GIJN)
+7. Apéndices (fuentes/URLs y cadena de custodia)
+
+Principios: **separación hecho/inferencia**, **lenguaje narrativo de confianza**
+(no "Alto/Medio/Bajo" a secas, sino "las evidencias establecen con elevada
+confianza que…"), **hipótesis en competencia** y declaración de **evidencia
+negativa**.
+
 ### Reglas de calidad del informe
 
-1. **Interpretación por hallazgo** — cada dato va acompañado de su significado:
-   ¿qué es?, ¿por qué es relevante?, ¿qué riesgo u oportunidad supone?, ¿qué
-   hacer a continuación? En modo multi-agente lo genera el Agente Síntesis.
-2. **Confianza justificada** — se indica qué factores sostienen o reducen la
+1. **Cadena de custodia** — cada evidencia lleva su marca de tiempo y un hash
+   **SHA-256** del dato, para trazabilidad e integridad.
+2. **Interpretación por hallazgo** — cada dato va acompañado de su significado:
+   ¿qué es?, ¿por qué es relevante?, ¿qué riesgo u oportunidad supone?
+3. **Confianza justificada** — se indica qué factores sostienen o reducen la
    confianza y qué haría falta para aumentarla.
 3. **Escaneo de correos obligatorio (dominios)** — al investigar un dominio,
    O.M.N.I.S ejecuta automáticamente `modules/email_scanner.py`
