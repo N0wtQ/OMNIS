@@ -103,4 +103,10 @@ def run(target: str, query: str) -> List[Finding]:
     findings += _wayback_machine(target)
     findings += _crt_sh(target)
     findings += _http_headers(target)
+    # Identificación de software: servidor web, CDN, WAF, DNS y correo
+    try:
+        from modules.fingerprint import run as fingerprint_run
+        findings += fingerprint_run(target)
+    except Exception:
+        pass
     return findings

@@ -161,6 +161,26 @@ Compartir → "Añadir a pantalla de inicio".
 
 ---
 
+## 4.f. IDENTIFICACIÓN DE SOFTWARE (FINGERPRINTING)
+
+Al investigar un dominio, O.M.N.I.S identifica el **software concreto** que hay
+detrás de cada servicio (`modules/fingerprint.py`), con técnicas gratuitas y
+pasivas:
+
+- **Servidor web / CDN / WAF** — por cabeceras HTTP y firmas: nginx, Apache,
+  IIS, LiteSpeed, Cloudflare, Akamai, Fastly, Imperva Incapsula,
+  **Fortinet FortiWeb/FortiGate**, Sucuri, F5 BIG-IP, Amazon CloudFront…
+- **Servidor DNS** — consulta CHAOS `version.bind` al NS autoritativo (BIND,
+  PowerDNS, Knot…)
+- **Servidor de correo** — banner SMTP del MX (Exchange, Postfix, Exim, Zimbra…)
+- **CMS / framework** — por cookies y cabeceras (WordPress, Laravel, Drupal…)
+
+Cada detección indica el **método** empleado y su confianza, y se incorpora al
+análisis TECHINT del informe. En modo multi-agente, el agente TECHINT nombra
+software y versión y evalúa si hay componentes obsoletos o vulnerables.
+
+---
+
 ## 5. ORQUESTACIÓN MULTI-AGENTE
 
 Para consultas complejas, OMNIS actúa como orquestador:
